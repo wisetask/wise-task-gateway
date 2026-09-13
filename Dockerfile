@@ -1,17 +1,30 @@
-FROM gradle:8.0.2-jdk17 AS build
-COPY --chown=gradle:gradle . /src
-WORKDIR /src
-ARG USERNAME
-ARG TOKEN
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /app
+COPY gradlew .
+COPY gradle ./gradle
+COPY build.gradle .
+COPY settings.gradle .
 
-RUN USERNAME=$USERNAME TOKEN=$TOKEN gradle build --no-daemon
+RUN chmod +x gradlew
+RUN sed -i 's/\r$//' ./gradlew # removes \r which windows somehow adds to eol
 
-FROM eclipse-temurin:17-jre
+RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
+    ./gradlew dependencies --no-daemon
 
-EXPOSE 8084
+COPY ./src ./src
 
-RUN mkdir /app
+RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
+    ./gradlew clean build -x test --no-daemon
 
-COPY --from=build /src/build/libs/wise-task-gateway-1.0.0.jar /app/app.jar
+# reduces memory usage
+FROM eclipse-temurin:25-jre-alpine
+WORKDIR /app
+COPY --from=build /app/src/main/resources/certs /app/src/main/resources/certs
+COPY --from=build /app/build/libs/*.jar app.jar
+RUN addgroup -S wise-task && adduser -S wise-task-gateway -G wise-task && \
+    chown -R wise-task-gateway:wise-task /app/src && \
+    chmod 755 /app/src
 
-ENTRYPOINT ["java","-jar","/app/app.jar", "--spring.config.location=classpath:/,file:/app/config/"]
+USER wise-task-gateway
+
+ENTRYPOINT ["java","-jar","app.jar"]

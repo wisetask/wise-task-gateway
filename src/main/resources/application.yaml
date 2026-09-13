@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: wise-task-gateway
+  threads:
+    virtual:
+      enabled: true
+grpc:
+  service:
+    graph:
+      host: ${GRAPH_GRPC_PORT:localhost}
+      port: ${GRAPH_GRPC_PORT:6565}
+    profile:
+      host: ${PROFILE_APP_NAME:localhost}
+      port: ${PROFILE_GRPC_PORT:6567}
+    plugin:
+      host: ${PLUGIN_APP_NAME:localhost}
+      port: ${PLUGIN_GRPC_PORT:6566}
+    task:
+      host: ${TASK_APP_NAME:localhost}
+      port: ${TASK_GRPC_PORT:6568}
+    statistics:
+      host: ${EVENT_APP_NAME:localhost}
+      port: ${EVENT_GRPC_PORT:6569}
+server:
+  port: ${GATEWAY_PORT:8084}
+
+security:
+  jwt:
+    public-key: file:src/main/resources/certs/public.pem
+    private-key: file:src/main/resources/certs/private.pem
+    access-expires-at: ${JWT_ACCESS_EXPIRES_AT:1h}
+    refresh-expires-at: ${JWT_REFRESH_EXPIRES_AT:7d}
+
+  oauth2:
+    resourceserver:
+      jwt:
+        issuer-uri:
+          - https://accounts.google.com # TODO
+          - https://id.vk.ru # TODO
+
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:3150}
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS}
+    allowed-headers: "*"
+    allow-credentials: ${CORS_ALLOWED_CREDENTIALS:true}
+    max-age: ${CORS_MAX_AGE:3600}
+
+logging:
+  level:
+    ru.leti.wise.task.gateway: ${GATEWAY_LOGGING_LEVEL:INFO}
+    org.springframework.security: ${GATEWAY_LOGGING_LEVEL:INFO}
+
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://${TEMPO_HOST:localhost}:${TEMPO_PORT:4318}/v1/traces
+  otlp:
+    metrics:
+      export:
+        enabled: false # prometheus will do it
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true

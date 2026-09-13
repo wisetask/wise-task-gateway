@@ -4,13 +4,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import ru.leti.graphql.model.StatisticRequestInput;
-import ru.leti.graphql.model.StatisticResponse;
-import ru.leti.graphql.model.StatisticScope;
-import ru.leti.graphql.model.StatisticType;
 import ru.leti.wise.task.event.Statistic;
 
 import com.google.protobuf.Timestamp;
+import ru.leti.graphql.types.*;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

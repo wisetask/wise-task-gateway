@@ -23,7 +23,8 @@ input ProfileInput {
 }
 
 type Token {
-    token: String!
+    accessToken: String!
+    refreshToken: String!
 }
 
 type Profile {

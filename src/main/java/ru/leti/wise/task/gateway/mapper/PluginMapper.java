@@ -1,7 +1,7 @@
 package ru.leti.wise.task.gateway.mapper;
 
 import org.mapstruct.*;
-import ru.leti.graphql.model.*;
+import ru.leti.graphql.types.*;
 import ru.leti.wise.task.plugin.PluginOuterClass;
 
 import java.util.List;
