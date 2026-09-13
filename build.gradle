@@ -1,17 +1,18 @@
-import org.flywaydb.gradle.task.FlywayMigrateTask
-
 plugins {
     id 'java'
-    id "com.google.protobuf" version "0.9.2"
-    id "org.flywaydb.flyway" version "9.21.1"
-    id 'org.springframework.boot' version "${springBootVersion}"
-    id 'io.spring.dependency-management' version "${dependencyManagementPluginVersion}"
-    id "io.github.kobylynskyi.graphql.codegen" version "5.7.2"
+    id 'org.springframework.boot' version "4.1.1"
+    id 'io.spring.dependency-management' version "1.1.7"
+    id "com.google.protobuf" version "0.10.0"
+    id 'com.netflix.dgs.codegen' version '8.6.0'
 }
 
 group = 'ru.leti'
-version = '1.0.0'
-sourceCompatibility = '17'
+version = '2.0.0'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 configurations {
     compileOnly {
@@ -21,6 +22,47 @@ configurations {
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
+}
+
+dependencies {
+    // security
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
+    // API
+    implementation 'org.springframework.boot:spring-boot-starter-graphql'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-grpc-client'
+
+    // Observability (tracing, metrics, logs)
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'com.github.loki4j:loki-logback-appender:2.1.0'
+
+    // Mapping
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.46'
+    annotationProcessor 'org.projectlombok:lombok:1.18.46'
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc'
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
 }
 
 sourceSets {
@@ -28,115 +70,13 @@ sourceSets {
         proto {
             srcDir 'src/main/resources/proto'
         }
-        java {
-            srcDir "$buildDir/generated/source/graphql"
-        }
     }
 }
 
-dependencies {
-    implementation 'io.github.lognet:grpc-spring-boot-starter:5.0.0'
-    implementation 'io.grpc:grpc-protobuf:1.53.0'
-    implementation 'io.grpc:grpc-stub:1.53.0'
-    implementation 'com.salesforce.servicelibs:reactor-grpc-stub:1.2.3'
-    implementation 'com.google.protobuf:protobuf-java-util:3.21.7'
-
-    implementation 'org.mapstruct:mapstruct:1.5.3.Final'
-
-    // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
-    implementation 'javax.xml.bind:jaxb-api:2.1'
-    implementation 'org.postgresql:postgresql:42.2.27'
-
-    //observability
-    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'io.micrometer:micrometer-registry-prometheus'
-    implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot:1.0.1'
-    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
-    implementation 'com.github.loki4j:loki-logback-appender:1.3.2'
-    implementation 'org.springframework:spring-aspects'
-    implementation 'io.zipkin.brave:brave-instrumentation-grpc:5.16.0'
-
-    implementation 'org.springframework.boot:spring-boot-starter-graphql'
-    compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-
-    annotationProcessor 'org.projectlombok:lombok:1.18.26'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
-    annotationProcessor 'no.entur.mapstruct.spi:protobuf-spi-impl:1.42'
-    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
-    implementation 'javax.annotation:javax.annotation-api:1.3.2'
-    implementation 'javax.validation:validation-api:2.0.1.Final'
-
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework:spring-webflux'
-    testImplementation 'org.springframework.graphql:spring-graphql-test'
-}
-
-task pluginMigrate(type: FlywayMigrateTask) {
-    url = 'jdbc:postgresql://localhost:5432/wise_task_plugin'
-    user = 'wise_task_plugin'
-    password = 'wise_task_plugin'
-    cleanDisabled = false
-    locations = ['filesystem:./src/main/resources/db/plugin/migration']
-}
-
-task profileMigrate(type: FlywayMigrateTask) {
-    url = 'jdbc:postgresql://localhost:5432/wise_task_profile'
-    user = 'wise_task_profile'
-    password = 'wise_task_profile'
-    cleanDisabled = false
-    locations = ['filesystem:./src/main/resources/db/profile/migration']
-}
-
-task taskMigrate(type: FlywayMigrateTask) {
-    url = 'jdbc:postgresql://localhost:5432/wise_task_task'
-    user = 'wise_task_task'
-    password = 'wise_task_task'
-    cleanDisabled = false
-    locations = ['filesystem:./src/main/resources/db/task/migration']
-}
-
-graphqlCodegen {
-    // all config options:
-    // https://github.com/kobylynskyi/graphql-java-codegen/blob/main/docs/codegen-options.md
-    graphqlSchemas {
-        rootDir = "$projectDir/src/main/resources/graphql/".toString()
-    }
-    outputDir = new File("$buildDir/generated/source/graphql")
-    packageName = "ru.leti.graphql.model"
-}
-
-// Automatically generate GraphQL code on project build:
-compileJava.dependsOn 'graphqlCodegen'
-
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.21.7"
-    }
-    clean {
-        delete protobuf.generatedFilesBaseDir
-    }
-    plugins {
-        grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.53.0"
-        }
-        reactor {
-            artifact = "com.salesforce.servicelibs:reactor-grpc:1.2.3"
-        }
-    }
-    generateProtoTasks {
-        all()*.plugins {
-            grpc {}
-            reactor {}
-        }
-    }
+generateJava {
+    schemaPaths = ["${projectDir}/src/main/resources/graphql"]
+    packageName = 'ru.leti.graphql'
+    generateClient = true
 }
 
 tasks.named('test') {

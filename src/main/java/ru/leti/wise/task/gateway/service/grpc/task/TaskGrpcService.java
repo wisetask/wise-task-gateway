@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.leti.wise.task.task.TaskGrpc;
 import ru.leti.wise.task.task.TaskOuterClass;
 import ru.leti.wise.task.task.TaskOuterClass.Task;
+import ru.leti.wise.task.task.TaskServiceGrpc.TaskServiceBlockingStub;
 
 import java.util.List;
 
@@ -15,19 +16,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TaskGrpcService {
 
-    private final TaskStubHolder taskStubHolder;
+    private final TaskServiceBlockingStub taskService;
 
     public Task getTask(String id) {
         var request = TaskGrpc.GetTaskRequest.newBuilder()
                 .setId(id)
                 .build();
-        return taskStubHolder.get().getTask(request).getTask();
+        return taskService.getTask(request).getTask();
     }
 
     public List<Task> getAllTasks() {
         var request = Empty.newBuilder().build();
 
-        return taskStubHolder.get().getAllTask(request).getTaskList();
+        return taskService.getAllTask(request).getTaskList();
     }
 
     public void deleteTask(String id) {
@@ -35,7 +36,7 @@ public class TaskGrpcService {
                 .setId(id)
                 .build();
 
-        taskStubHolder.get().deleteTask(request);
+        taskService.deleteTask(request);
     }
 
     public Task createTask(Task task) {
@@ -43,7 +44,7 @@ public class TaskGrpcService {
                 .setTask(task)
                 .build();
 
-        return taskStubHolder.get().createTask(request).getTask();
+        return taskService.createTask(request).getTask();
     }
 
     public Task updateTask(Task task) {
@@ -51,7 +52,7 @@ public class TaskGrpcService {
                 .setTask(task)
                 .build();
 
-        return taskStubHolder.get().updateTask(request).getTask();
+        return taskService.updateTask(request).getTask();
     }
 
     public TaskOuterClass.Solution solveTask(TaskOuterClass.Solution solutionRequest) {
@@ -59,7 +60,7 @@ public class TaskGrpcService {
                 .setSolution(solutionRequest)
                 .build();
 
-        return taskStubHolder.get().solveTask(request).getSolution();
+        return taskService.solveTask(request).getSolution();
     }
 
     public TaskOuterClass.Solution getTaskSolution(String id) {
@@ -67,7 +68,7 @@ public class TaskGrpcService {
                 .setId(id)
                 .build();
 
-        return taskStubHolder.get().getTaskSolution(request).getSolution();
+        return taskService.getTaskSolution(request).getSolution();
     }
 
     public List<TaskOuterClass.Solution> getAllTaskSolutions(String taskId, String authorId) {
@@ -76,7 +77,7 @@ public class TaskGrpcService {
                 .setAuthorId(authorId)
                 .build();
 
-        return taskStubHolder.get().getAllTaskSolutions(request).getSolutionList();
+        return taskService.getAllTaskSolutions(request).getSolutionList();
     }
 
     public List<TaskOuterClass.Solution> getUserSolutionStatistic(String authorId) {
@@ -84,6 +85,6 @@ public class TaskGrpcService {
                 .setAuthorId(authorId)
                 .build();
 
-        return taskStubHolder.get().getUserSolutionStatistic(request).getSolutionList();
+        return taskService.getUserSolutionStatistic(request).getSolutionList();
     }
 }

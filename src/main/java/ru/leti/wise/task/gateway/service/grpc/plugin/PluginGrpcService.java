@@ -4,13 +4,11 @@ import com.google.protobuf.Empty;
 import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.leti.graphql.model.*;
-import ru.leti.wise.task.gateway.mapper.GraphMapper;
+import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.mapper.PluginMapper;
-import ru.leti.wise.task.graph.GraphGrpc;
-import ru.leti.wise.task.graph.GraphOuterClass.Graph;
 import ru.leti.wise.task.plugin.PluginGrpc;
 import ru.leti.wise.task.plugin.PluginOuterClass;
+import ru.leti.wise.task.plugin.PluginServiceGrpc.PluginServiceBlockingStub;
 
 import java.util.List;
 
@@ -20,12 +18,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PluginGrpcService {
 
-    private final PluginStubHolder pluginStubHolder;
+    private final PluginServiceBlockingStub pluginService;
     private final PluginMapper pluginMapper;
 
     public boolean isOwnerPlugin(String userId, String pluginId) {
         var request = PluginGrpc.IsOwnerPluginRequest.newBuilder().setUserId(userId).setPluginId(pluginId).build();
-        return pluginStubHolder.get().isOwnerPlugin(request).getResult();
+        return pluginService.isOwnerPlugin(request).getResult();
     }
 
     public PluginOuterClass.ImplementationResult checkPluginImplementation(String id, String file) {
@@ -34,7 +32,7 @@ public class PluginGrpcService {
                 .setFile(file)
                 .build();
 
-        return pluginStubHolder.get().checkPluginImplementation(request).getImplementationResult();
+        return pluginService.checkPluginImplementation(request).getImplementationResult();
     }
 
     public String checkPluginSolution(SolutionInput solution) {
@@ -42,7 +40,7 @@ public class PluginGrpcService {
                 .setSolution(pluginMapper.toSolution(solution))
                 .build();
 
-        return pluginStubHolder.get().checkPluginSolution(request).getResult();
+        return pluginService.checkPluginSolution(request).getResult();
     }
 
 
@@ -51,7 +49,7 @@ public class PluginGrpcService {
                 .setPlugin(pluginMapper.toPlugin(plugin, authorId))
                 .build();
 
-        return pluginStubHolder.get().createPlugin(request).getPlugin();
+        return pluginService.createPlugin(request).getPlugin();
     }
 
     public String deletePlugin(String id) {
@@ -59,11 +57,11 @@ public class PluginGrpcService {
                 .setId(id)
                 .build();
 
-        return pluginStubHolder.get().deletePlugin(request).getId();
+        return pluginService.deletePlugin(request).getId();
     }
 
     public List<PluginOuterClass.Plugin> getAllPlugins() {
-        return pluginStubHolder.get().getAllPlugins(Empty.newBuilder().build()).getPluginList();
+        return pluginService.getAllPlugins(Empty.newBuilder().build()).getPluginList();
     }
 
     public PluginOuterClass.Plugin getPlugin(String id) {
@@ -71,7 +69,7 @@ public class PluginGrpcService {
                 .setId(id)
                 .build();
 
-        return pluginStubHolder.get().getPlugin(request).getPlugin();
+        return pluginService.getPlugin(request).getPlugin();
     }
 
     public PluginOuterClass.Plugin updatePlugin(PluginInput plugin, String authorId) {
@@ -79,7 +77,7 @@ public class PluginGrpcService {
                 .setPlugin(pluginMapper.toPlugin(plugin, authorId))
                 .build();
 
-        return pluginStubHolder.get().updatePlugin(request).getPlugin();
+        return pluginService.updatePlugin(request).getPlugin();
     }
 
     public String validatePlugin(String id) {
@@ -87,6 +85,6 @@ public class PluginGrpcService {
                 .setId(id)
                 .build();
 
-        return pluginStubHolder.get().validatePlugin(request).getId();
+        return pluginService.validatePlugin(request).getId();
     }
 }

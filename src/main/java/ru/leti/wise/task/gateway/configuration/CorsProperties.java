@@ -1,4 +1,4 @@
-package ru.leti.wise.task.gateway.security.configuration;
+package ru.leti.wise.task.gateway.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

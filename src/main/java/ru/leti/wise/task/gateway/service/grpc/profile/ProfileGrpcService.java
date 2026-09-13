@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.leti.wise.task.profile.ProfileGrpc;
 import ru.leti.wise.task.profile.ProfileOuterClass.Profile;
+import ru.leti.wise.task.profile.ProfileServiceGrpc.ProfileServiceBlockingStub;
 
 import java.util.List;
 
@@ -15,12 +16,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProfileGrpcService {
 
-    private final ProfileStubHolder profileStubHolder;
+    private final ProfileServiceBlockingStub profileService;
 
     public List<Profile> getAllProfiles() {
         var request = Empty.newBuilder().build();
 
-        return profileStubHolder.get().getAllProfiles(request).getProfileList();
+        return profileService.getAllProfiles(request).getProfileList();
     }
 
     public Profile getProfile(String id) {
@@ -28,7 +29,7 @@ public class ProfileGrpcService {
                 .setProfileId(id)
                 .build();
 
-        return profileStubHolder.get().getProfile(request).getProfile();
+        return profileService.getProfile(request).getProfile();
     }
 
     public Profile getProfileByEmail(String email) {
@@ -36,7 +37,7 @@ public class ProfileGrpcService {
                 .setEmail(email)
                 .build();
 
-        return profileStubHolder.get().getProfileByEmail(request).getProfile();
+        return profileService.getProfileByEmail(request).getProfile();
     }
 
     public void deleteProfile(String id) {
@@ -44,7 +45,7 @@ public class ProfileGrpcService {
                 .setProfileId(id)
                 .build();
 
-        profileStubHolder.get().deleteProfile(request);
+        profileService.deleteProfile(request);
     }
 
     public Profile updateProfile(Profile profile) {
@@ -52,7 +53,7 @@ public class ProfileGrpcService {
                 .setProfile(profile)
                 .build();
 
-        return profileStubHolder.get().updateProfile(request).getProfile();
+        return profileService.updateProfile(request).getProfile();
     }
 
     public Profile signIn(String email, String password) {
@@ -61,7 +62,7 @@ public class ProfileGrpcService {
                 .setPassword(password)
                 .build();
 
-        return profileStubHolder.get().signIn(request).getProfile();
+        return profileService.signIn(request).getProfile();
     }
 
     public Profile signUp(Profile profile) {
@@ -69,7 +70,7 @@ public class ProfileGrpcService {
                 .setProfile(profile)
                 .build();
 
-        return profileStubHolder.get().signUp(request).getProfile();
+        return profileService.signUp(request).getProfile();
     }
 
     public Profile resetPassword(String recoveryToken, String newPassword) {
@@ -78,7 +79,7 @@ public class ProfileGrpcService {
                 .setNewPassword(newPassword)
                 .build();
 
-        return profileStubHolder.get().resetPassword(request).getProfile();
+        return profileService.resetPassword(request).getProfile();
     }
 
     public void sendResetPasswordEmail(String email) {
@@ -86,7 +87,7 @@ public class ProfileGrpcService {
                 .setEmail(email)
                 .build();
 
-        profileStubHolder.get().sendResetPasswordEmail(request);
+        profileService.sendResetPasswordEmail(request);
     }
 
     public void changePassword(String id, String oldPassword, String newPassword) {
@@ -95,7 +96,7 @@ public class ProfileGrpcService {
                 .setNewPassword(newPassword)
                 .build();
 
-        profileStubHolder.get().changePassword(request);
+        profileService.changePassword(request);
     }
 
 

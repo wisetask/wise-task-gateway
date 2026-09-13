@@ -17,9 +17,4 @@ openssl rsa -in private.pem -pubout -out public.pem # публичный клю�
 cp public.pem ../../../../../wise-task-event/src/main/resources/certs/public.pem # копируем публичный ключ в wise-task-event
 cd ../../../..
 
-username="Terross"
-
-echo "Введите токен:"
-read token
-
-USERNAME=$username TOKEN=$token docker compose up --build
+docker compose up --build

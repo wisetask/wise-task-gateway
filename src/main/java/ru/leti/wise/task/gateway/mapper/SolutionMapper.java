@@ -1,7 +1,7 @@
 package ru.leti.wise.task.gateway.mapper;
 
 import org.mapstruct.*;
-import ru.leti.graphql.model.*;
+import ru.leti.graphql.types.*;
 import ru.leti.wise.task.task.TaskOuterClass;
 
 import java.util.List;
@@ -24,7 +24,6 @@ public interface SolutionMapper {
     List<Solution> toSolutions(List<TaskOuterClass.Solution> solution);
 
     @Mapping(target = "solutionImplementation", ignore = true)
-    @Mapping(target = "solutionGraph.graph", expression = "java(graphMapper.toGraph(solutionGraphInput.getGraph(), authorId))")
     @Mapping(target = "authorId", expression = "java(authorId)")
     @Mapping(target = "isCorrect", ignore = true)
     TaskOuterClass.Solution toSolutionGraph(SolutionGraphInput solution, @Context String authorId);
