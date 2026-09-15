@@ -36,6 +36,7 @@ public class ProfileGrpcService {
         return profileService.getProfile(request).getProfile();
     }
 
+    @Cacheable(value = "profile", key = "#email")
     public Profile getProfileByEmail(String email) {
         var request = ProfileGrpc.GetProfileByEmailRequest.newBuilder()
                 .setEmail(email)
@@ -58,7 +59,7 @@ public class ProfileGrpcService {
 
     @CachePut(
             value = "profile",
-            key = "#profile.id"
+            key = "#profile.email"
     )
     public Profile updateProfile(Profile profile) {
         var request = ProfileGrpc.UpdateProfileRequest.newBuilder()

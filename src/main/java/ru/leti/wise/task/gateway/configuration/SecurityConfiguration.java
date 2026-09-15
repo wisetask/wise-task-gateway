@@ -23,6 +23,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import ru.leti.wise.task.gateway.dto.OAuth2Issuers;
+import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
 
 import java.util.List;
 
@@ -36,6 +38,8 @@ public class SecurityConfiguration {
     private final JwtProperties jwtProperties;
 
     private final CorsProperties corsProperties;
+
+    private final ProfileGrpcService profileGrpcService;
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
@@ -75,11 +79,20 @@ public class SecurityConfiguration {
     public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
         var converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            var role = jwt.getClaimAsString("role");
-            if (role == null) {
+            var iss = jwt.getIssuer();
+            if(iss == null) {
                 return List.of();
             }
-            return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+            if(iss.equals(OAuth2Issuers.GOOGLE.getIss())){
+                var email = jwt.getClaim("email");
+                if(email == null) {
+                    return List.of();
+                }
+                var profile = profileGrpcService.getProfileByEmail(email.toString());
+                String role = profile.getProfileRole().name();
+                return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+            }
+            return List.of();
         });
         return converter;
     }
