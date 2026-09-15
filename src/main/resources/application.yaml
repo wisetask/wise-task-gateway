@@ -1,4 +1,10 @@
 spring:
+  data:
+    redis:
+      host: ${REDIS_APP_NAME:localhost}
+      port: ${REDIS_PORT:6379}
+  cache:
+    type: redis
   application:
     name: wise-task-gateway
   threads:

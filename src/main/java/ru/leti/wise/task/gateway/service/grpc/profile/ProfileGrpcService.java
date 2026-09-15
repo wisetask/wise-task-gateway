@@ -3,6 +3,9 @@ package ru.leti.wise.task.gateway.service.grpc.profile;
 import com.google.protobuf.Empty;
 import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import ru.leti.wise.task.profile.ProfileGrpc;
 import ru.leti.wise.task.profile.ProfileOuterClass.Profile;
@@ -24,9 +27,10 @@ public class ProfileGrpcService {
         return profileService.getAllProfiles(request).getProfileList();
     }
 
-    public Profile getProfile(String id) {
+    @Cacheable(value = "profile", key = "#userId")
+    public Profile getProfile(String userId) {
         var request = ProfileGrpc.GetProfileRequest.newBuilder()
-                .setProfileId(id)
+                .setProfileId(userId)
                 .build();
 
         return profileService.getProfile(request).getProfile();
@@ -40,14 +44,22 @@ public class ProfileGrpcService {
         return profileService.getProfileByEmail(request).getProfile();
     }
 
-    public void deleteProfile(String id) {
+    @CacheEvict(
+            value = "profile",
+            key = "#userId"
+    )
+    public void deleteProfile(String userId) {
         var request = ProfileGrpc.DeleteProfileRequest.newBuilder()
-                .setProfileId(id)
+                .setProfileId(userId)
                 .build();
 
         profileService.deleteProfile(request);
     }
 
+    @CachePut(
+            value = "profile",
+            key = "#profile.id"
+    )
     public Profile updateProfile(Profile profile) {
         var request = ProfileGrpc.UpdateProfileRequest.newBuilder()
                 .setProfile(profile)
