@@ -1,4 +1,4 @@
-package ru.leti.wise.task.gateway.configuration;
+package ru.leti.wise.task.gateway.configuration.security;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -23,6 +23,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import ru.leti.wise.task.gateway.configuration.CorsProperties;
+import ru.leti.wise.task.gateway.configuration.JwtProperties;
 import ru.leti.wise.task.gateway.dto.OAuth2Issuers;
 import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
 
@@ -75,25 +77,10 @@ public class SecurityConfiguration {
         return source;
     }
 
-    @Bean // Добавляет в SecurityContext роль пользователя
+    @Bean
     public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
         var converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            var iss = jwt.getIssuer();
-            if(iss == null) {
-                return List.of();
-            }
-            if(iss.equals(OAuth2Issuers.GOOGLE.getIss())){
-                var email = jwt.getClaim("email");
-                if(email == null) {
-                    return List.of();
-                }
-                var profile = profileGrpcService.getProfileByEmail(email.toString());
-                String role = profile.getProfileRole().name();
-                return List.of(new SimpleGrantedAuthority("ROLE_" + role));
-            }
-            return List.of();
-        });
+        converter.setJwtGrantedAuthoritiesConverter();
         return converter;
     }
 

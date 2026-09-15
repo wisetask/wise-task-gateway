@@ -37,12 +37,6 @@ security:
     access-expires-at: ${JWT_ACCESS_EXPIRES_AT:1h}
     refresh-expires-at: ${JWT_REFRESH_EXPIRES_AT:7d}
 
-  oauth2:
-    resourceserver:
-      jwt:
-        issuer-uri:
-          - https://accounts.google.com # TODO
-          - https://id.vk.ru # TODO
 
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:3150}
@@ -83,5 +77,12 @@ management:
           server:
             requests: true
 
-cache:
-  ttl: 1m
+
+
+app:
+  cache:
+    ttl: 1m
+  oauth2:
+    trusted-issuers:
+      - https://accounts.google.com # TODO
+      - https://id.vk.ru # TODO
