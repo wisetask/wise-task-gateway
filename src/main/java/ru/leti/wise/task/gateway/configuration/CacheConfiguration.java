@@ -20,11 +20,11 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class CacheConfiguration {
     private final ObjectMapper objectMapper;
-    @Value("$cache.ttl")
+    @Value("${cache.ttl}")
     private Duration cacheTtl;
 
     @Bean
-    public RedisCacheConfiguration cacheConfiguration() {
+    public RedisCacheConfiguration redisCacheConfiguration() {
         var keySerializer = new StringRedisSerializer();
         var valueSerializer = new JacksonJsonRedisSerializer<>(objectMapper, Profile.class);
         return RedisCacheConfiguration.defaultCacheConfig()
@@ -45,7 +45,7 @@ public class CacheConfiguration {
             RedisConnectionFactory connectionFactory
     ) {
         return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(cacheConfiguration())
+                .cacheDefaults(redisCacheConfiguration())
                 .transactionAware()
                 .build();
     }

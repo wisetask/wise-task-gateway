@@ -82,3 +82,6 @@ management:
         http:
           server:
             requests: true
+
+cache:
+  ttl: 1m
