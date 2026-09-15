@@ -5,14 +5,12 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.AuthenticatedPrincipal;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
-
-import ru.leti.graphql.types.*;
+import ru.leti.graphql.types.ImplementationResult;
+import ru.leti.graphql.types.Plugin;
+import ru.leti.graphql.types.PluginInput;
+import ru.leti.graphql.types.SolutionInput;
 import ru.leti.wise.task.gateway.dto.UserCredentials;
 import ru.leti.wise.task.gateway.mapper.PluginMapper;
 import ru.leti.wise.task.gateway.service.grpc.plugin.PluginGrpcService;
