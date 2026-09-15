@@ -1,65 +1,38 @@
 package ru.leti.wise.task.gateway.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import org.jspecify.annotations.Nullable;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import ru.leti.graphql.types.*;
-
 
 import java.util.Collection;
-import java.util.List;
 
+@Getter
+public class UserCredentials extends AbstractAuthenticationToken {
 
-@Data
-@Builder
-@AllArgsConstructor
-public class UserCredentials implements UserDetails {
+    private final String id;
+    private final String email;
+    private final String role;
 
-    private String id;
-    private String email;
-    private String role;
-
-    public UserCredentials(Profile profile) {
-        this.id = profile.getId();
-        this.email = profile.getEmail();
-        this.role = profile.getProfileRole().name();
+    public UserCredentials(
+            String id,
+            String email,
+            String role,
+            @Nullable Collection<? extends GrantedAuthority> authorities
+    ) {
+        this.id = id;
+        this.role = role;
+        this.email = email;
+        super(authorities);
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+    public @Nullable Object getCredentials() {
+        return this;
     }
 
     @Override
-    public String getPassword() {
-        return null;
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public @Nullable Object getPrincipal() {
+        return this;
     }
 }

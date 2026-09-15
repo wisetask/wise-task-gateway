@@ -53,7 +53,6 @@ public class SecurityService {
                 .subject(user.getId())
                 .issuedAt(now)
                 .expiresAt(now.plus(jwtProperties.accessExpiresAt()))
-                .claim("role", user.getProfileRole())
                 .claim("email", user.getEmail())
                 .build();
 

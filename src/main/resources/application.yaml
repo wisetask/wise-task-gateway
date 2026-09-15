@@ -83,6 +83,4 @@ app:
   cache:
     ttl: 1m
   oauth2:
-    trusted-issuers:
-      - https://accounts.google.com # TODO
-      - https://id.vk.ru # TODO
+    trusted-issuers: https://accounts.google.com,https://id.vk.ru

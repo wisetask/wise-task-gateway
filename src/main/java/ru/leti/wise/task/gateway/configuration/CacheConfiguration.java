@@ -20,7 +20,8 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class CacheConfiguration {
     private final ObjectMapper objectMapper;
-    @Value("${cache.ttl}")
+
+    @Value("${app.cache.ttl}")
     private Duration cacheTtl;
 
     @Bean
