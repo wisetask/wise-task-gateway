@@ -8,11 +8,12 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import ru.leti.graphql.types.*;
+import ru.leti.graphql.types.GetAllProfilesRequestInput;
+import ru.leti.graphql.types.GetAllProfilesResponse;
+import ru.leti.graphql.types.Profile;
+import ru.leti.graphql.types.ProfileInput;
 import ru.leti.wise.task.gateway.mapper.ProfileMapper;
 import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
-
-import java.util.List;
 
 @Slf4j
 @Observed
@@ -25,8 +26,12 @@ public class ProfileController {
 
     @QueryMapping
     @PreAuthorize("hasAnyRole(\"USER\",\"AUTHOR\",\"ADMIN\")")
-    public List<Profile> getAllProfiles() {
-        return profileMapper.toProfiles(profileGrpcService.getAllProfiles());
+    public GetAllProfilesResponse getAllProfiles(
+            @Argument GetAllProfilesRequestInput request
+    ) {
+        var grpcRequest = profileMapper.toGetAllRequest(request);
+        var grpcResponse = profileGrpcService.getAllProfiles(grpcRequest);
+        return profileMapper.toGetAllResponse(grpcResponse);
     }
 
 

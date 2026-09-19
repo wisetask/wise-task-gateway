@@ -1,3 +1,23 @@
+input GraphFilterInput {
+    id: String
+    authorId: String
+    vertexCount: Int
+    edgeCount: Int
+    isDirect: Boolean
+    isNamed: Boolean
+    name: String
+}
+
+input GetAllGraphsRequestInput {
+    pagination: PaginationRequestInput
+    filter: GraphFilterInput
+}
+
+type GetAllGraphsResponse {
+    items: [Graph!]!
+    pagination: PaginationResponse
+}
+
 input CreateGraphRequest {
    graph: GraphInput!
 }
@@ -46,6 +66,7 @@ type Graph {
     edgeList: [Edge]!
     isNamed: Boolean!
     name: String
+    author: Profile
 }
 
 type Vertex {

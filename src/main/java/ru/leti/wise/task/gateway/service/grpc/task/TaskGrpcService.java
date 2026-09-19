@@ -1,15 +1,16 @@
 package ru.leti.wise.task.gateway.service.grpc.task;
 
-import com.google.protobuf.Empty;
 import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.leti.wise.task.task.TaskGrpc;
+import ru.leti.wise.task.task.TaskGrpc.GetAllTaskRequest;
+import ru.leti.wise.task.task.TaskGrpc.GetAllTaskResponse;
+import ru.leti.wise.task.task.TaskGrpc.GetAllTaskSolutionsRequest;
+import ru.leti.wise.task.task.TaskGrpc.GetAllTaskSolutionsResponse;
 import ru.leti.wise.task.task.TaskOuterClass;
 import ru.leti.wise.task.task.TaskOuterClass.Task;
 import ru.leti.wise.task.task.TaskServiceGrpc.TaskServiceBlockingStub;
-
-import java.util.List;
 
 @Component
 @Observed
@@ -25,10 +26,8 @@ public class TaskGrpcService {
         return taskService.getTask(request).getTask();
     }
 
-    public List<Task> getAllTasks() {
-        var request = Empty.newBuilder().build();
-
-        return taskService.getAllTask(request).getTaskList();
+    public GetAllTaskResponse getAllTasks(GetAllTaskRequest request) {
+        return taskService.getAllTask(request);
     }
 
     public void deleteTask(String id) {
@@ -71,20 +70,7 @@ public class TaskGrpcService {
         return taskService.getTaskSolution(request).getSolution();
     }
 
-    public List<TaskOuterClass.Solution> getAllTaskSolutions(String taskId, String authorId) {
-        var request = TaskGrpc.GetAllTaskSolutionsRequest.newBuilder()
-                .setTaskId(taskId)
-                .setAuthorId(authorId)
-                .build();
-
-        return taskService.getAllTaskSolutions(request).getSolutionList();
-    }
-
-    public List<TaskOuterClass.Solution> getUserSolutionStatistic(String authorId) {
-        var request = TaskGrpc.GetUserSolutionStatisticRequest.newBuilder()
-                .setAuthorId(authorId)
-                .build();
-
-        return taskService.getUserSolutionStatistic(request).getSolutionList();
+    public GetAllTaskSolutionsResponse getAllTaskSolutions(GetAllTaskSolutionsRequest request) {
+        return taskService.getAllTaskSolutions(request);
     }
 }

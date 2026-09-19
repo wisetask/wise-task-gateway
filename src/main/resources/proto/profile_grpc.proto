@@ -4,6 +4,7 @@ package ru.leti.wise.task.profile;
 
 import "profile.proto";
 import "google/protobuf/empty.proto";
+import "pagination.proto";
 
 
 service ProfileService {
@@ -12,12 +13,38 @@ service ProfileService {
   rpc SendResetPasswordEmail(SendResetPasswordEmailRequest) returns (google.protobuf.Empty);
   rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
   rpc ChangePassword(ChangePasswordRequest) returns (google.protobuf.Empty);
-  rpc GetAllProfiles(google.protobuf.Empty) returns (GetAllProfilesResponse);
+  rpc GetAllProfiles(GetAllProfilesRequest) returns (GetAllProfilesResponse);
+  rpc GetProfilesByIds(ProfileIds) returns (Profiles);
   rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
   rpc GetProfileByEmail(GetProfileByEmailRequest) returns (GetProfileByEmailResponse);
   rpc DeleteProfile(DeleteProfileRequest) returns (google.protobuf.Empty);
   rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
   rpc GetProfileStatistic(GetProfileStatisticRequest) returns (GetProfileStatisticResponse);
+}
+message ProfileIds {
+  repeated string profile_ids = 1;
+}
+
+message Profiles {
+  repeated Profile profiles = 1;
+}
+
+message ProfileFilter {
+  optional string email = 1;
+  optional string first_name = 2;
+  optional string last_name = 3;
+  optional string patronymic = 5;
+  repeated string profile_role = 6;
+}
+
+message GetAllProfilesRequest{
+  ru.leti.wise.task.pagination.PaginationRequest pagination = 1;
+  ProfileFilter filter = 2;
+}
+
+message GetAllProfilesResponse {
+  repeated Profile items = 1;
+  ru.leti.wise.task.pagination.PaginationResponse pagination = 2;
 }
 
 message GetProfileRequest {
@@ -91,8 +118,4 @@ message ResetPasswordRequest{
 
 message ResetPasswordResponse{
   Profile profile = 1;
-}
-
-message GetAllProfilesResponse {
-  repeated Profile profile = 1;
 }

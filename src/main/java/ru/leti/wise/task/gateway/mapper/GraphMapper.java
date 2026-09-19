@@ -3,13 +3,23 @@ package ru.leti.wise.task.gateway.mapper;
 import org.mapstruct.*;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.graph.GraphGrpc;
+import ru.leti.wise.task.graph.GraphGrpc.GraphFilter;
 import ru.leti.wise.task.graph.GraphOuterClass;
-
-import java.util.List;
+import ru.leti.wise.task.profile.ProfileOuterClass;
 
 @Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
-        collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
+        collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
+        uses = {ProfileMapper.class})
 public interface GraphMapper {
+
+    GraphFilter toGraphFilter(GraphFilterInput filter);
+
+    GraphGrpc.GetAllGraphsRequest toGetAllRequest(GetAllGraphsRequestInput request);
+
+    @Mapping(target = "id", source = "graph.id")
+    @Mapping(target = "author", source = "profile")
+    Graph toGraph(GraphOuterClass.Graph graph, ProfileOuterClass.Profile profile);
+
     @Mapping(target = "authorId", expression = "java(authorId)")
     GraphOuterClass.Graph toGraph(GraphInput graph, @Context String authorId);
 
@@ -18,8 +28,6 @@ public interface GraphMapper {
     GraphOuterClass.Edge toEdge(EdgeInput edge);
 
     Graph toGraph(GraphOuterClass.Graph graph);
-
-    List<Graph> toGraphs(List<GraphOuterClass.Graph> graphs);
 
     Vertex toVertex(GraphOuterClass.Vertex vertex);
 

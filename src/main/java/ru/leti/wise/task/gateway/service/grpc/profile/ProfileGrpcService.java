@@ -1,10 +1,11 @@
 package ru.leti.wise.task.gateway.service.grpc.profile;
 
-import com.google.protobuf.Empty;
 import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.leti.wise.task.profile.ProfileGrpc;
+import ru.leti.wise.task.profile.ProfileGrpc.GetAllProfilesRequest;
+import ru.leti.wise.task.profile.ProfileGrpc.GetAllProfilesResponse;
 import ru.leti.wise.task.profile.ProfileOuterClass.Profile;
 import ru.leti.wise.task.profile.ProfileServiceGrpc.ProfileServiceBlockingStub;
 
@@ -18,10 +19,8 @@ public class ProfileGrpcService {
 
     private final ProfileServiceBlockingStub profileService;
 
-    public List<Profile> getAllProfiles() {
-        var request = Empty.newBuilder().build();
-
-        return profileService.getAllProfiles(request).getProfileList();
+    public GetAllProfilesResponse getAllProfiles(GetAllProfilesRequest request) {
+        return profileService.getAllProfiles(request);
     }
 
     public Profile getProfile(String id) {
@@ -99,5 +98,8 @@ public class ProfileGrpcService {
         profileService.changePassword(request);
     }
 
-
+    public List<Profile> getProfilesByIds(List<String> profileIds) {
+        var request = ProfileGrpc.ProfileIds.newBuilder().addAllProfileIds(profileIds).build();
+        return profileService.getProfilesByIds(request).getProfilesList();
+    }
 }
