@@ -1,4 +1,10 @@
 spring:
+  data:
+    redis:
+      host: ${REDIS_APP_NAME:localhost}
+      port: ${REDIS_PORT:6379}
+  cache:
+    type: redis
   application:
     name: wise-task-gateway
   threads:
@@ -26,17 +32,11 @@ server:
 
 security:
   jwt:
-    public-key: file:src/main/resources/certs/public.pem
-    private-key: file:src/main/resources/certs/private.pem
+    public-key: file:wise-task-gateway/src/main/resources/certs/public.pem
+    private-key: file:wise-task-gateway/src/main/resources/certs/private.pem
     access-expires-at: ${JWT_ACCESS_EXPIRES_AT:1h}
     refresh-expires-at: ${JWT_REFRESH_EXPIRES_AT:7d}
 
-  oauth2:
-    resourceserver:
-      jwt:
-        issuer-uri:
-          - https://accounts.google.com # TODO
-          - https://id.vk.ru # TODO
 
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:3150}
@@ -76,3 +76,9 @@ management:
         http:
           server:
             requests: true
+
+app:
+  cache:
+    ttl: 1m
+  oauth2:
+    trusted-issuers: https://accounts.google.com,https://id.vk.ru

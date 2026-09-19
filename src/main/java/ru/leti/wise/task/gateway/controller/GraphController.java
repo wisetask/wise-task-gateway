@@ -5,11 +5,12 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import ru.leti.graphql.types.*;
+import ru.leti.graphql.types.GenerateGraphRequest;
+import ru.leti.graphql.types.Graph;
+import ru.leti.graphql.types.GraphInput;
+import ru.leti.wise.task.gateway.dto.UserCredentials;
 import ru.leti.wise.task.gateway.mapper.GraphMapper;
 import ru.leti.wise.task.gateway.service.grpc.graph.GraphGrpcService;
 
@@ -26,10 +27,11 @@ public class GraphController {
 
     @PreAuthorize("hasAnyRole(\"USER\",\"AUTHOR\",\"ADMIN\")")
     @MutationMapping
-    public Graph createGraph(@Argument GraphInput graph) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userId = ((User) auth.getPrincipal()).getUsername();
-        return graphMapper.toGraph(graphGrpcService.createGraph(graph, userId));
+    public Graph createGraph(
+            @Argument GraphInput graph,
+            @AuthenticationPrincipal UserCredentials user
+    ) {
+        return graphMapper.toGraph(graphGrpcService.createGraph(graph, user.getId()));
     }
 
     @PreAuthorize("hasAnyRole(\"USER\",\"AUTHOR\",\"ADMIN\")")
