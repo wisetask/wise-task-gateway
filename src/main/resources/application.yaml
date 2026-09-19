@@ -32,8 +32,8 @@ server:
 
 security:
   jwt:
-    public-key: file:src/main/resources/certs/public.pem
-    private-key: file:src/main/resources/certs/private.pem
+    public-key: file:wise-task-gateway/src/main/resources/certs/public.pem
+    private-key: file:wise-task-gateway/src/main/resources/certs/private.pem
     access-expires-at: ${JWT_ACCESS_EXPIRES_AT:1h}
     refresh-expires-at: ${JWT_REFRESH_EXPIRES_AT:7d}
 
@@ -76,8 +76,6 @@ management:
         http:
           server:
             requests: true
-
-
 
 app:
   cache:

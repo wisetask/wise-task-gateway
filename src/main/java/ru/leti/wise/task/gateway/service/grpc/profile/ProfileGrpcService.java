@@ -78,9 +78,10 @@ public class ProfileGrpcService {
         return profileService.signIn(request).getProfile();
     }
 
-    public Profile signUp(Profile profile) {
+    public Profile signUp(Profile profile, Boolean isExternal) {
         var request = ProfileGrpc.SignUpRequest.newBuilder()
                 .setProfile(profile)
+                .setIsExternal(isExternal)
                 .build();
 
         return profileService.signUp(request).getProfile();

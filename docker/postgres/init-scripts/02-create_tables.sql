@@ -88,29 +88,29 @@ CREATE TABLE IF NOT EXISTS task_implementation (
 );
 
 -- Осторожно с foreign keys - они могут уже существовать
-DO $$ 
+DO $$
 BEGIN
     -- Добавляем constraints только если их нет
     IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FK3vp0aj24cls00qfbw43x0175d') THEN
         ALTER TABLE catalog_student_ids ADD CONSTRAINT FK3vp0aj24cls00qfbw43x0175d FOREIGN KEY (catalog_id) REFERENCES catalog;
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FK9j8f7ya0we8l9d1qgxhb2sxwr') THEN
         ALTER TABLE solution_graph ADD CONSTRAINT FK9j8f7ya0we8l9d1qgxhb2sxwr FOREIGN KEY (id) REFERENCES solution;
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FKpouwsj45b4ua1eobf6v3qghg7') THEN
         ALTER TABLE solution_implementation ADD CONSTRAINT FKpouwsj45b4ua1eobf6v3qghg7 FOREIGN KEY (id) REFERENCES solution;
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FK2x5vv3las4inaro4ow57w4ahm') THEN
         ALTER TABLE task_catalog ADD CONSTRAINT FK2x5vv3las4inaro4ow57w4ahm FOREIGN KEY (catalog_id) REFERENCES catalog;
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FK4irpkxn11fha2kvb3bxivxtyg') THEN
         ALTER TABLE task_graph ADD CONSTRAINT FK4irpkxn11fha2kvb3bxivxtyg FOREIGN KEY (id) REFERENCES task;
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'FKpx6vuo2o6t97sux59dbbhdvca') THEN
         ALTER TABLE task_implementation ADD CONSTRAINT FKpx6vuo2o6t97sux59dbbhdvca FOREIGN KEY (id) REFERENCES task;
     END IF;
@@ -132,29 +132,3 @@ CREATE TABLE IF NOT EXISTS plugin (
     plugin_type varchar(255),
     primary key (id)
 );
-
--- Даем права пользователям (этот скрипт безопасен)
-GRANT ALL PRIVILEGES ON DATABASE wise_task_profile TO wise_task_profile;
-GRANT ALL PRIVILEGES ON DATABASE wise_task_plugin TO wise_task_plugin;
-GRANT ALL PRIVILEGES ON DATABASE wise_task_task TO wise_task_task;
-
-\c wise_task_profile;
-GRANT USAGE, CREATE ON SCHEMA public TO wise_task_profile;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO wise_task_profile;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO wise_task_profile;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO wise_task_profile;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO wise_task_profile;
-
-\c wise_task_plugin;
-GRANT USAGE, CREATE ON SCHEMA public TO wise_task_plugin;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO wise_task_plugin;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO wise_task_plugin;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO wise_task_plugin;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO wise_task_plugin;
-
-\c wise_task_task;
-GRANT USAGE, CREATE ON SCHEMA public TO wise_task_task;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO wise_task_task;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO wise_task_task;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO wise_task_task;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO wise_task_task;
