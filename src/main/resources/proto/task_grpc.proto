@@ -15,6 +15,7 @@ service TaskService {
   rpc SolveTask(SolveTaskRequest) returns (SolveTaskResponse);
   rpc GetTaskSolution(GetTaskSolutionRequest) returns (GetTaskSolutionResponse);
   rpc GetAllTaskSolutions(GetAllTaskSolutionsRequest) returns (GetAllTaskSolutionsResponse);
+  rpc GetTasksByIds(TaskIds) returns (GetTasksByIdsResponse);
   rpc CreateCatalog(CreateCatalogRequest) returns (CreateCatalogResponse);
   rpc DeleteCatalog(DeleteCatalogRequest) returns (google.protobuf.Empty);
   rpc UpdateCatalog(UpdateCatalogRequest) returns (UpdateCatalogResponse);
@@ -127,4 +128,12 @@ message GetAllTaskSolutionsRequest {
 message GetAllTaskSolutionsResponse {
   repeated Solution items = 1;
   ru.leti.wise.task.pagination.PaginationResponse pagination = 2;
+}
+
+message TaskIds {
+  repeated string task_ids = 1;
+}
+
+message GetTasksByIdsResponse {
+  repeated Task tasks = 1;
 }

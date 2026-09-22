@@ -9,6 +9,8 @@ import ru.leti.wise.task.graph.GraphGrpc.GetAllGraphsResponse;
 import ru.leti.wise.task.graph.GraphOuterClass;
 import ru.leti.wise.task.graph.GraphServiceGrpc.GraphServiceBlockingStub;
 
+import java.util.List;
+
 
 @Component
 @Observed
@@ -23,6 +25,14 @@ public class GraphGrpcService {
                 .build();
 
         return graphService.getGraphById(request).getGraph();
+    }
+
+    public List<GraphOuterClass.Graph> getGraphsByIds(List<String> graphIds) {
+        var request = GraphGrpc.GraphIds.newBuilder()
+                .addAllGraphIds(graphIds)
+                .build();
+
+        return graphService.getGraphsByIds(request).getGraphsList();
     }
 
     public GetAllGraphsResponse getAllGraphs(GetAllGraphsRequest request) {

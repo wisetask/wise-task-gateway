@@ -50,6 +50,10 @@ logging:
     ru.leti.wise.task.gateway: ${GATEWAY_LOGGING_LEVEL:INFO}
     org.springframework.security: ${GATEWAY_LOGGING_LEVEL:INFO}
 
+cache:
+  max-size: ${CACHE_MAX_SIZE:1000}
+  ttl: ${CACHE_TTL:1h}
+
 
 management:
   tracing:

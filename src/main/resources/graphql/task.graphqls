@@ -75,7 +75,26 @@ input TaskImplementationInput {
     isPublic: Boolean!
     pluginId: String!
 }
-# -------------------------------------------------------------------------
+
+input PluginStringInput {
+    key: String!
+    value: String!
+}
+
+input SolutionGraphInput {
+    id: ID!
+    taskId: String!
+    authorId: String!
+    graph: GraphInput!
+    pluginsInput: [PluginStringInput!]
+}
+
+input SolutionImplementationInput {
+    id: ID!
+    taskId: String!
+    authorId: String!
+    code: String!
+}
 
 interface Task {
     id: ID!
@@ -126,29 +145,7 @@ type TaskImplementation implements Task {
     isPublic: Boolean!
     plugin: Plugin!
 }
-# ---------------------------------------------------------------------------------
 
-input PluginStringInput {
-    key: String!
-    value: String!
-}
-
-input SolutionGraphInput {
-    id: ID!
-    taskId: String!
-    authorId: String!
-    graph: GraphInput!
-    pluginsInput: [PluginStringInput!]
-}
-
-input SolutionImplementationInput {
-    id: ID!
-    taskId: String!
-    authorId: String!
-    code: String!
-}
-
-# ---------------------------------------------------------------------------------
 
 interface Solution {
     id: ID!

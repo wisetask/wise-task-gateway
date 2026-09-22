@@ -12,6 +12,8 @@ import ru.leti.wise.task.task.TaskOuterClass;
 import ru.leti.wise.task.task.TaskOuterClass.Task;
 import ru.leti.wise.task.task.TaskServiceGrpc.TaskServiceBlockingStub;
 
+import java.util.List;
+
 @Component
 @Observed
 @RequiredArgsConstructor
@@ -24,6 +26,14 @@ public class TaskGrpcService {
                 .setId(id)
                 .build();
         return taskService.getTask(request).getTask();
+    }
+
+    public List<TaskOuterClass.Task> getTasksByIds(List<String> taskIds) {
+        var request = TaskGrpc.TaskIds.newBuilder()
+                .addAllTaskIds(taskIds)
+                .build();
+
+        return taskService.getTasksByIds(request).getTasksList();
     }
 
     public GetAllTaskResponse getAllTasks(GetAllTaskRequest request) {

@@ -9,6 +9,9 @@ import ru.leti.wise.task.plugin.PluginGrpc.GetAllPluginsResponse;
 import ru.leti.wise.task.plugin.PluginOuterClass;
 import ru.leti.wise.task.plugin.PluginServiceGrpc.PluginServiceBlockingStub;
 
+import java.util.Collection;
+import java.util.List;
+
 
 @Component
 @Observed
@@ -76,5 +79,13 @@ public class PluginGrpcService {
                 .build();
 
         return pluginService.checkPluginImplementation(request).getImplementationResult();
+    }
+
+    public List<PluginOuterClass.Plugin> getPluginsByIds(List<String> ids) {
+        var request = PluginGrpc.PluginIds.newBuilder()
+                .addAllPluginIds(ids)
+                .build();
+
+        return pluginService.getPluginsByIds(request).getPluginsList();
     }
 }

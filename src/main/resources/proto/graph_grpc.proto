@@ -12,6 +12,7 @@ service GraphService {
   rpc generateRandomGraph (GenerateGraphRequest) returns (GenerateGraphResponse);
   rpc getAllGraphs(GetAllGraphsRequest) returns (GetAllGraphsResponse);
   rpc removeGraph (RemoveGraphRequest) returns (RemoveGraphResponse);
+  rpc GetGraphsByIds(GraphIds) returns (GetGraphsByIdsResponse);
 }
 message GraphFilter {
   string id = 1;
@@ -70,4 +71,12 @@ message GetGraphByIdResponse {
 
 message GetGraphByIdRequest {
   string id = 1;
+}
+
+message GraphIds {
+  repeated string graph_ids = 1;
+}
+
+message GetGraphsByIdsResponse {
+  repeated Graph graphs = 1;
 }

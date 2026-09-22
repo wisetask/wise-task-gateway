@@ -47,11 +47,18 @@ public interface TaskMapper {
     @Mapping(target = "author", source = "profile")
     TaskImplementation toTaskImplementation(TaskOuterClass.Task task, ProfileOuterClass.Profile profile);
 
+    @Mapping(target = "plugin", ignore = true)
+    PluginInfo toPluginInfo(TaskOuterClass.PluginInfo pluginInfo);
+
     default TaskOuterClass.TaskType toTaskType(TaskType taskType) {
         return TaskOuterClass.TaskType.valueOf(taskType.name());
     }
 
     default TaskOuterClass.PluginType toPluginType(PluginType pluginType) {
         return TaskOuterClass.PluginType.valueOf(pluginType.name());
+    }
+
+    default PluginType toPluginType(TaskOuterClass.PluginType pluginType) {
+        return PluginType.valueOf(pluginType.name());
     }
 }

@@ -51,6 +51,10 @@ public interface SolutionMapper {
     SolutionGraph toSolutionGraph(TaskOuterClass.Solution solution);
 
     @Mapping(target = ".", source = "solution.solutionImplementation")
+    @Mapping(target = "implementationResult", source = "solution.solutionImplementation.implementationResultList")
     SolutionImplementation toSolutionImplementation(TaskOuterClass.Solution solution);
+
+    @Mapping(target = "plugin", ignore = true)
+    PluginResult toPluginResult(TaskOuterClass.PluginResult pluginResult);
 
 }

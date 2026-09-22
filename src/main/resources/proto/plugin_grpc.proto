@@ -8,6 +8,7 @@ import "google/protobuf/empty.proto";
 
 service PluginService {
   rpc GetAllPlugins (GetAllPluginRequest) returns (GetAllPluginsResponse);
+  rpc GetPluginsByIds(PluginIds) returns (GetPluginsByIdsResponse);
   rpc CreatePlugin (CreatePluginRequest) returns (CreatePluginResponse);
   rpc GetPlugin (GetPluginRequest) returns (GetPluginResponse);
   rpc UpdatePlugin (UpdatePluginRequest) returns (UpdatePluginResponse);
@@ -92,4 +93,12 @@ message CheckPluginImplementationRequest {
 
 message CheckPluginImplementationResponse {
   ImplementationResult implementation_result = 1;
+}
+
+message PluginIds {
+  repeated string plugin_ids = 1;
+}
+
+message GetPluginsByIdsResponse {
+  repeated Plugin plugins = 1;
 }

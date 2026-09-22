@@ -2,6 +2,10 @@ package ru.leti.wise.task.gateway.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.mapper.PaginationMapper;
@@ -24,7 +28,9 @@ public class PluginService {
     private final PluginMapper pluginMapper;
     private final PluginGrpcService pluginGrpcService;
     private final ProfileGrpcService profileGrpcService;
+    private final GraphService graphService;
     private final PaginationMapper paginationMapper;
+    private final ObjectProvider<PluginService> selfProvider;
 
     public GetAllPluginsResponse getAllPluginsResponse(GetAllPluginRequestInput request) {
         log.debug("Запрос на получение списка плагинов {}", request);
@@ -37,21 +43,24 @@ public class PluginService {
     }
 
     public Plugin getPlugin(String id) {
-        return toPlugin(pluginGrpcService.getPlugin(id));
+        return selfProvider.getObject().toPlugin(pluginGrpcService.getPlugin(id));
     }
 
     public boolean isOwnerPlugin(String userId, String pluginId) {
         return pluginGrpcService.getPlugin(pluginId).getAuthorId().equals(userId);
     }
 
+    @CachePut(value = "plugin", key = "#result.id", cacheManager = "localCacheManager")
     public Plugin createPlugin(PluginInput plugin, String authorId) {
-        return toPlugin(pluginGrpcService.createPlugin(pluginMapper.toPlugin(plugin, authorId)));
+        return selfProvider.getObject().toPlugin(pluginGrpcService.createPlugin(pluginMapper.toPlugin(plugin, authorId)));
     }
 
+    @CachePut(value = "plugin", key = "#plugin.id", cacheManager = "localCacheManager")
     public Plugin updatePlugin(PluginInput plugin, String authorId) {
-        return toPlugin(pluginGrpcService.updatePlugin(pluginMapper.toPlugin(plugin, authorId)));
+        return selfProvider.getObject().toPlugin(pluginGrpcService.updatePlugin(pluginMapper.toPlugin(plugin, authorId)));
     }
 
+    @CacheEvict(value = "plugin", key = "#id", cacheManager = "localCacheManager")
     public String deletePlugin(String id) {
         return pluginGrpcService.deletePlugin(id);
     }
@@ -65,10 +74,26 @@ public class PluginService {
     }
 
     public ImplementationResult checkPluginImplementation(String id, String file) {
-        return pluginMapper.toImplementationResult(pluginGrpcService.checkPluginImplementation(id, file));
+        var grpcResult = pluginGrpcService.checkPluginImplementation(id, file);
+        var result = pluginMapper.toImplementationResult(grpcResult);
+        result.setGraphTestResults(toGraphTestResults(grpcResult.getGraphTestResultsList()));
+
+        return result;
     }
 
-    private Plugin toPlugin(PluginOuterClass.Plugin grpcPlugin) {
+    private List<GraphTestResult> toGraphTestResults(List<PluginOuterClass.GraphTestResult> graphTestResults) {
+        var graphs = graphService.getGraphsByIds(graphTestResults.stream().map(PluginOuterClass.GraphTestResult::getGraphId).toList());
+
+        return graphTestResults.stream().map(graphTestResult -> {
+            var mapped = pluginMapper.toGraphTestResult(graphTestResult);
+            mapped.setGraph(graphs.get(graphTestResult.getGraphId()));
+
+            return mapped;
+        }).toList();
+    }
+
+    @Cacheable(value = "plugin", key = "#grpcPlugin.id", cacheManager = "localCacheManager")
+    public Plugin toPlugin(PluginOuterClass.Plugin grpcPlugin) {
         return pluginMapper.toPlugin(grpcPlugin, getGrpcProfile(grpcPlugin.getAuthorId()));
     }
 

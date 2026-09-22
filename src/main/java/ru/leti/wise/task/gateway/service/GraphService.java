@@ -2,6 +2,10 @@ package ru.leti.wise.task.gateway.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.mapper.GraphMapper;
@@ -25,6 +29,7 @@ public class GraphService {
     private final GraphGrpcService graphGrpcService;
     private final ProfileGrpcService profileGrpcService;
     private final PaginationMapper paginationMapper;
+    private final ObjectProvider<GraphService> selfProvider;
 
     public GetAllGraphsResponse getAllGraphsResponse(GetAllGraphsRequestInput request) {
         log.debug("Запрос на получение списка графов {}", request);
@@ -37,17 +42,36 @@ public class GraphService {
     }
 
     public Graph getGraphById(String id) {
-        return toGraph(graphGrpcService.getGraphById(id));
+        return selfProvider.getObject().toGraph(graphGrpcService.getGraphById(id));
     }
 
+    public Map<String, Graph> getGraphsByIds(List<String> graphIds) {
+        var ids = graphIds.stream().filter(id -> id != null && !id.isBlank()).distinct().toList();
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+
+        var graphs = graphGrpcService.getGraphsByIds(ids);
+        var profiles = getProfilesByIds(graphs.stream().map(GraphOuterClass.Graph::getAuthorId).toList());
+
+        return graphs.stream()
+                .collect(Collectors.toMap(
+                        GraphOuterClass.Graph::getId,
+                        graph -> graphMapper.toGraph(graph, profiles.get(graph.getAuthorId()))
+                ));
+    }
+
+    @CachePut(value = "graph", key = "#result.id", cacheManager = "localCacheManager")
     public Graph createGraph(GraphInput graph, String authorId) {
         return toGraph(graphGrpcService.createGraph(graphMapper.toGraph(graph, authorId)));
     }
 
+    @CachePut(value = "graph", key = "#result.id", cacheManager = "localCacheManager")
     public Graph generateGraph(GenerateGraphRequest generateGraphRequest) {
         return toGraph(graphGrpcService.generateRandomGraph(graphMapper.toGenerateGraphRequest(generateGraphRequest)));
     }
 
+    @CacheEvict(value = "graph", key = "#id", cacheManager = "localCacheManager")
     public String deleteGraph(String id) {
         return graphGrpcService.deleteGraph(id);
     }
@@ -56,7 +80,8 @@ public class GraphService {
         return graphGrpcService.getGraphById(graphId).getAuthorId().equals(userId);
     }
 
-    private Graph toGraph(GraphOuterClass.Graph grpcGraph) {
+    @Cacheable(value = "graph", key = "#grpcGraph.id", cacheManager = "localCacheManager")
+    public Graph toGraph(GraphOuterClass.Graph grpcGraph) {
         return graphMapper.toGraph(grpcGraph, getGrpcProfile(grpcGraph.getAuthorId()));
     }
 

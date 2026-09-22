@@ -27,8 +27,7 @@ public class TaskController {
             "@taskGrpcService.getTask(#id).getAuthorId().equals(authentication.principal.id) or" +
             " hasRole(\"ADMIN\")")
     public String deleteTask(@Argument String id) {
-        taskGrpcService.deleteTask(id);
-        return id;
+        return taskService.deleteTask(id);
     }
 
 
