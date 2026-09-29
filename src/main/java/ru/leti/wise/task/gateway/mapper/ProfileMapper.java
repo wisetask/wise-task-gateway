@@ -1,6 +1,7 @@
 package ru.leti.wise.task.gateway.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.profile.ProfileGrpc;
@@ -18,6 +19,7 @@ public interface ProfileMapper {
 
     ProfileGrpc.GetAllProfilesRequest toGetAllRequest(GetAllProfilesRequestInput request);
 
+    @Mapping(target = "items", source = "itemsList")
     GetAllProfilesResponse toGetAllResponse(ProfileGrpc.GetAllProfilesResponse response);
 
     ProfileOuterClass.Profile toProfile(ProfileInput profile);

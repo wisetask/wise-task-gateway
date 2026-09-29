@@ -17,7 +17,6 @@ import ru.leti.wise.task.gateway.utils.SecurityUtils;
 @RequiredArgsConstructor
 public class TaskController {
 
-    private final TaskGrpcService taskGrpcService;
     private final TaskService taskService;
 
 
@@ -39,7 +38,7 @@ public class TaskController {
 
     @QueryMapping
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
-    public GetAllTaskResponse getAllTasks(GetAllTaskRequestInput request) {
+    public GetAllTaskResponse getAllTasks(@Argument GetAllTaskRequestInput request) {
         return taskService.getAllTaskResponse(request);
     }
 

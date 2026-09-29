@@ -14,7 +14,7 @@ input GetAllGraphsRequestInput {
 }
 
 type GetAllGraphsResponse {
-    items: [Graph!]!
+    items: [Graph!]
     pagination: PaginationResponse
 }
 
@@ -30,7 +30,7 @@ input GenerateGraphRequest {
 }
 
 input GraphInput {
-    id: ID!
+    id: ID
     vertexCount: Int!
     edgeCount: Int!
     isDirect: Boolean!

@@ -13,7 +13,7 @@ input GetAllTaskRequestInput {
 }
 
 type GetAllTaskResponse {
-    items: [Task!]!
+    items: [Task!]
     pagination: PaginationResponse
 }
 
@@ -25,7 +25,7 @@ input GetAllTaskSolutionsRequestInput {
 }
 
 type GetAllTaskSolutionsResponse {
-    items: [Solution!]!
+    items: [Solution!]
     pagination: PaginationResponse
 }
 
@@ -57,7 +57,7 @@ input TaskGraphInput {
     description: String!
     category: String!
     taskType: TaskType!
-    authorId: String!
+    authorId: String
     isPublic: Boolean!
     isHiddenMistake: Boolean!
     graph: GraphInput
@@ -66,12 +66,12 @@ input TaskGraphInput {
 }
 
 input TaskImplementationInput {
-    id: ID!
+    id: ID
     name: String!
     description: String!
     category: String!
     taskType: TaskType!
-    authorId: String!
+    authorId: String
     isPublic: Boolean!
     pluginId: String!
 }
@@ -82,17 +82,17 @@ input PluginStringInput {
 }
 
 input SolutionGraphInput {
-    id: ID!
+    id: ID
     taskId: String!
-    authorId: String!
+    authorId: String
     graph: GraphInput!
     pluginsInput: [PluginStringInput!]
 }
 
 input SolutionImplementationInput {
-    id: ID!
+    id: ID
     taskId: String!
-    authorId: String!
+    authorId: String
     code: String!
 }
 
@@ -102,7 +102,7 @@ interface Task {
     description: String!
     category: String!
     taskType: TaskType!
-    author: Profile!
+    author: Profile
     isPublic: Boolean!
 }
 
@@ -114,7 +114,7 @@ type Rule {
 }
 
 type PluginInfo {
-    plugin: Plugin!
+    plugin: Plugin
     value: String!
     mistakeText: String
     sign: String
@@ -127,7 +127,7 @@ type TaskGraph implements Task {
     description: String!
     category: String!
     taskType: TaskType!
-    author: Profile!
+    author: Profile
     isPublic: Boolean!
     isHiddenMistake: Boolean!
     graph: Graph
@@ -141,23 +141,23 @@ type TaskImplementation implements Task {
     description: String!
     category: String!
     taskType: TaskType!
-    author: Profile!
+    author: Profile
     isPublic: Boolean!
-    plugin: Plugin!
+    plugin: Plugin
 }
 
 
 interface Solution {
     id: ID!
-    task: Task!
-    author: Profile!
+    task: Task
+    author: Profile
     isCorrect: Boolean!
 }
 
 type SolutionGraph implements Solution {
     id: ID!
-    task: Task!
-    author: Profile!
+    task: Task
+    author: Profile
     isCorrect: Boolean!
     graph: Graph!
     pluginResults: [PluginResult]!
@@ -165,14 +165,14 @@ type SolutionGraph implements Solution {
 
 type SolutionImplementation implements Solution {
     id: ID!
-    task: Task!
-    author: Profile!
+    task: Task
+    author: Profile
     isCorrect: Boolean!
     implementationResult: [GraphResult]!
 }
 
 type PluginResult {
-    plugin: Plugin!
+    plugin: Plugin
     isCorrect: Boolean!
     value: String!
     trueValue: String!
@@ -186,4 +186,3 @@ type GraphResult {
     originalResult: String!
     result: String!
 }
-

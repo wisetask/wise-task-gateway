@@ -4,7 +4,7 @@ package ru.leti.wise.task.graph;
 
 message Graph {
   string id = 1;
-  string authorId = 2;
+  optional string authorId = 2;
   int32 vertexCount = 3;
   int32 edgeCount = 4;
   bool isDirect = 5;

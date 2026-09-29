@@ -14,14 +14,15 @@ service GraphService {
   rpc removeGraph (RemoveGraphRequest) returns (RemoveGraphResponse);
   rpc GetGraphsByIds(GraphIds) returns (GetGraphsByIdsResponse);
 }
+
 message GraphFilter {
-  string id = 1;
-  string authorId = 2;
-  int32 vertexCount = 3;
-  int32 edgeCount = 4;
-  bool isDirect = 5;
-  bool isNamed = 6;
-  string name = 7;
+  optional string id = 1;
+  optional string authorId = 2;
+  optional int32 vertexCount = 3;
+  optional int32 edgeCount = 4;
+  optional bool isDirect = 5;
+  optional bool isNamed = 6;
+  optional string name = 7;
 }
 
 message GetAllGraphsRequest {
@@ -39,6 +40,7 @@ message GenerateGraphRequest {
   int32 edgeCount = 2;
   bool isDirect = 3;
   bool isSaved = 4;
+  string authorId = 5;
 }
 
 message RemoveGraphRequest {
@@ -55,6 +57,7 @@ message GetGraphLibraryResponse {
 
 message GenerateGraphResponse {
   Graph graph = 1;
+  string author_id = 2;
 }
 
 message CreateGraphResponse {

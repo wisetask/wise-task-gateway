@@ -52,6 +52,9 @@ dependencies {
     // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.46'
     annotationProcessor 'org.projectlombok:lombok:1.18.46'
+
+    // Tests
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 protobuf {

@@ -38,7 +38,7 @@ public class GraphController {
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\", \"ADMIN\")")
     @MutationMapping
     public Graph generateGraph(@Argument GenerateGraphRequest generateGraphRequest) {
-        return graphService.generateGraph(generateGraphRequest);
+        return graphService.generateGraph(generateGraphRequest, SecurityUtils.getUserId());
     }
 
     @PreAuthorize(

@@ -1,6 +1,7 @@
 package ru.leti.wise.task.gateway.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -9,10 +10,12 @@ import ru.leti.wise.task.gateway.configuration.JwtProperties;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.mapper.ProfileMapper;
 import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
+import ru.leti.wise.task.gateway.utils.SecurityUtils;
 import ru.leti.wise.task.profile.ProfileOuterClass;
 
 import java.time.Instant;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SecurityService {
@@ -23,7 +26,9 @@ public class SecurityService {
     private final JwtProperties jwtProperties;
 
     public Token signIn(SignInRequest request) {
+        log.debug("signIn request, {}", request.getEmail());
         var profile = profileGrpcService.signIn(request.getEmail(), request.getPassword());
+        log.info("signIn request, signed in profile {}", profile.getId());
         return new Token(
                 generateAccessToken(profile),
                 generateRefreshToken(profile)
@@ -31,7 +36,9 @@ public class SecurityService {
     }
 
     public Token signUp(SignUpRequest request) {
+        log.debug("signUp request, {}", request.getProfile().getEmail());
         var profile = profileGrpcService.signUp(profileMapper.toProfile(request.getProfile()));
+        log.info("signUp request, signed up profile {}", profile.getId());
         return new Token(
                 generateAccessToken(profile),
                 generateRefreshToken(profile)
@@ -39,7 +46,9 @@ public class SecurityService {
     }
 
     public Token resetPassword(ResetPasswordRequest request){
+        log.debug("resetPassword request, {}", SecurityUtils.getUserIdOrAnonymous());
         var profile = profileGrpcService.resetPassword(request.getRecoveryToken(), request.getNewPassword());
+        log.info("resetPassword request, reset password for profile {}", profile.getId());
         return new Token(
                 generateAccessToken(profile),
                 generateRefreshToken(profile)

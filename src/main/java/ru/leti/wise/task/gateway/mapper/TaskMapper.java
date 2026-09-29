@@ -1,12 +1,14 @@
 package ru.leti.wise.task.gateway.mapper;
 
 import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.profile.ProfileOuterClass;
 import ru.leti.wise.task.task.TaskGrpc;
 import ru.leti.wise.task.task.TaskGrpc.GetAllTaskRequest;
 import ru.leti.wise.task.task.TaskGrpc.TaskFilter;
 import ru.leti.wise.task.task.TaskOuterClass;
+
 
 @Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
@@ -15,6 +17,10 @@ public interface TaskMapper {
 
     TaskFilter toTaskFilter(TaskFilterInput filter);
     GetAllTaskRequest toGetAllRequest(GetAllTaskRequestInput request);
+
+    @Mapping(target = "conditionList", source = "condition")
+    @Mapping(target = "graph", source = "graph", qualifiedByName = "graphWithAuthor")
+    TaskOuterClass.TaskGraph toGrpcTaskGraph(TaskGraphInput taskGraph, @Context String authorId);
 
     @Named("toTask")
     default Task toTask(TaskOuterClass.Task task, ProfileOuterClass.Profile profile) {

@@ -15,18 +15,18 @@ input GetAllPluginRequestInput {
 }
 
 type GetAllPluginsResponse {
-    items: [Plugin!]!
+    items: [Plugin!]
     pagination: PaginationResponse
 }
 
 input PluginInput {
-    id: ID!
+    id: ID
     name: String!
     description: String!
     category: String!
     jarName: String
     jarFile: String
-    authorId: ID!
+    authorId: ID
     isValid: Boolean!
     graphType: GraphType!
     beanName: String
@@ -57,7 +57,7 @@ type Plugin {
     name: String!
     description: String!
     category: String!
-    author: Profile!
+    author: Profile
     graphType: GraphType!
     isValid: Boolean!
     beanName: String
@@ -71,7 +71,7 @@ type ImplementationResult {
 }
 
 type GraphTestResult {
-    graph: Graph!
+    graph: Graph
     originalTimeResult: Int!
     timeResult: Int!
     result: String!

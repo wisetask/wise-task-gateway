@@ -18,23 +18,38 @@ public interface GraphMapper {
 
     @Mapping(target = "id", source = "graph.id")
     @Mapping(target = "author", source = "profile")
+    @Mapping(target = "vertexList", source = "graph.vertexListList")
+    @Mapping(target = "edgeList", source = "graph.edgeListList")
     Graph toGraph(GraphOuterClass.Graph graph, ProfileOuterClass.Profile profile);
 
+    @Named("graphWithAuthor")
     @Mapping(target = "authorId", expression = "java(authorId)")
+    @Mapping(target = "vertexListList", source = "vertexList")
+    @Mapping(target = "edgeListList", source = "edgeList")
     GraphOuterClass.Graph toGraph(GraphInput graph, @Context String authorId);
+
+    @Named("graphWithoutAuthor")
+    @Mapping(target = "vertexListList", source = "vertexList")
+    @Mapping(target = "edgeListList", source = "edgeList")
+    GraphOuterClass.Graph toGraph(GraphInput graph);
 
     GraphOuterClass.Vertex toVertex(VertexInput vertex);
 
     GraphOuterClass.Edge toEdge(EdgeInput edge);
 
+    @Mapping(target = "vertexList", source = "vertexListList")
+    @Mapping(target = "edgeList", source = "edgeListList")
     Graph toGraph(GraphOuterClass.Graph graph);
 
+    @Mapping(target = "xCoordinate", source = "XCoordinate")
+    @Mapping(target = "yCoordinate", source = "YCoordinate")
     Vertex toVertex(GraphOuterClass.Vertex vertex);
 
     Edge toEdge(GraphOuterClass.Edge edge);
 
-    GraphGrpc.GenerateGraphRequest toGenerateGraphRequest(GenerateGraphRequest generateGraphRequest);
-
+    @Mapping(target = "authorId", expression = "java(authorId)")
+    GraphGrpc.GenerateGraphRequest toGenerateGraphRequest(
+            GenerateGraphRequest req, @Context String authorId);
     default GraphOuterClass.Color toColor(Color color) {
         return GraphOuterClass.Color.valueOf(color.name());
     }

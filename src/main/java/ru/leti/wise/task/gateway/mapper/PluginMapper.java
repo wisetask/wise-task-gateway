@@ -27,8 +27,8 @@ public interface PluginMapper {
     @Mapping(target = "graph", ignore = true)
     GraphTestResult toGraphTestResult(PluginOuterClass.GraphTestResult graphTestResult);
 
-    @Mapping(target = "graph", source = "solution.payload.graph")
-    @Mapping(target = "otherGraph", source = "solution.additionalPayload.otherGraph")
+    @Mapping(target = "graph", source = "solution.payload.graph", qualifiedByName = "graphWithoutAuthor")
+    @Mapping(target = "otherGraph", source = "solution.additionalPayload.otherGraph", qualifiedByName = "graphWithoutAuthor")
     @Mapping(target = "handwrittenAnswer", source = "solution.additionalPayload.handwrittenAnswer")
     PluginOuterClass.Solution toSolution(SolutionInput solution);
 

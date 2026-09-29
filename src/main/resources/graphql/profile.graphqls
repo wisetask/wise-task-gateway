@@ -12,7 +12,7 @@ input GetAllProfilesRequestInput {
 }
 
 type GetAllProfilesResponse {
-    items: [Profile!]!
+    items: [Profile!]
     pagination: PaginationResponse
 }
 
