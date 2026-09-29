@@ -81,7 +81,7 @@ public abstract class AbstractControllerTest {
         context.registerBean(StatisticsGrpcService.class, () -> statisticsGrpcService);
         context.registerBean(JwtEncoder.class, () -> jwtEncoder);
         context.registerBean(JwtProperties.class,
-                () -> new JwtProperties(null, null, Duration.ofHours(1), Duration.ofDays(7)));
+                () -> new JwtProperties(null, null, Duration.ofHours(1), Duration.ofDays(7), "wise-task"));
         context.refresh();
 
         authenticateAs(CURRENT_USER_ID);
