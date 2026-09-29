@@ -58,6 +58,7 @@ message GetProfileStatisticResponse {
 
 message SignUpRequest {
   Profile profile = 1;
+  bool is_external = 2;
 }
 
 message SignUpResponse {

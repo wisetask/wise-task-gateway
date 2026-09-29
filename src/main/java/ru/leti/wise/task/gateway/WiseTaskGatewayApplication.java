@@ -8,7 +8,7 @@ import org.springframework.grpc.client.ImportGrpcClients;
 @SpringBootApplication
 @ConfigurationPropertiesScan
 @ImportGrpcClients()
-public class WiseTaskGatewayApplication {
+public class  WiseTaskGatewayApplication {
 
     static void main(String[] args) {
         SpringApplication.run(WiseTaskGatewayApplication.class, args);
