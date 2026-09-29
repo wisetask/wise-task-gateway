@@ -26,7 +26,6 @@ public class SecurityService {
     private final JwtProperties jwtProperties;
 
     public Token signIn(SignInRequest request) {
-        log.debug("signIn request, {}", request.getEmail());
         var profile = profileGrpcService.signIn(request.getEmail(), request.getPassword());
         log.info("signIn request, signed in profile {}", profile.getId());
         return new Token(
@@ -62,7 +61,6 @@ public class SecurityService {
                 .subject(user.getId())
                 .issuedAt(now)
                 .expiresAt(now.plus(jwtProperties.accessExpiresAt()))
-                .claim("role", user.getProfileRole())
                 .claim("email", user.getEmail())
                 .build();
 

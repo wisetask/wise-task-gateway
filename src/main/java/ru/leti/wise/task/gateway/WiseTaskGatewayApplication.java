@@ -10,7 +10,7 @@ import org.springframework.grpc.client.ImportGrpcClients;
 @SpringBootApplication
 @ConfigurationPropertiesScan
 @ImportGrpcClients()
-public class WiseTaskGatewayApplication {
+public class  WiseTaskGatewayApplication {
 
     static void main(String[] args) {
         log.info("wise-task-gateway application, starting");

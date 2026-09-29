@@ -63,6 +63,7 @@ services:
       - wise-task-task
       - wise-task-plugin
       - wise-task-graph
+      - redis
     container_name: wise-task-gateway
     ports:
       - "127.0.0.1:${GATEWAY_PORT}:${GATEWAY_PORT}"
@@ -119,6 +120,13 @@ services:
     volumes:
       - wise-task-db:/var/lib/postgresql/data
       - ./docker/postgres/init-scripts:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:8.10.1
+    container_name: ${REDIS_APP_NAME}
+    ports:
+      - "127.0.0.1:${REDIS_PORT}:${REDIS_PORT}"
+    restart: unless-stopped
 
   wise-task-mongo:
     image: mongo:8.0.4
