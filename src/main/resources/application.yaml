@@ -32,10 +32,11 @@ server:
 
 security:
   jwt:
-    public-key: file:src/main/resources/certs/public.pem
-    private-key: file:src/main/resources/certs/private.pem
+    public-key: file:wise-task-gateway/src/main/resources/certs/public.pem
+    private-key: file:wise-task-gateway/src/main/resources/certs/private.pem
     access-expires-at: ${JWT_ACCESS_EXPIRES_AT:1h}
     refresh-expires-at: ${JWT_REFRESH_EXPIRES_AT:7d}
+    issuer: wise-task
 
 
   cors:
@@ -85,4 +86,6 @@ app:
   cache:
     ttl: 1h
   oauth2:
-    trusted-issuers: https://accounts.google.com,https://id.vk.ru
+    trusted-issuers:
+      google-issuer: https://accounts.google.com
+      vk-issuer: https://id.vk.ru

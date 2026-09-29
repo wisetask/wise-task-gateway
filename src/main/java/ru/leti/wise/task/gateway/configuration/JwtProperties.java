@@ -11,6 +11,7 @@ public record JwtProperties(
         RSAPublicKey publicKey,
         RSAPrivateKey privateKey,
         Duration accessExpiresAt,
-        Duration refreshExpiresAt
+        Duration refreshExpiresAt,
+        String issuer
 ) {
 }

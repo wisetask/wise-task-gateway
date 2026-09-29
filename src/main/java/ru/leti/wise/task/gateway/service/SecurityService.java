@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import ru.leti.wise.task.gateway.configuration.JwtProperties;
 import ru.leti.graphql.types.*;
+import ru.leti.wise.task.gateway.configuration.security.MultitenancyAuthenticationResolver;
 import ru.leti.wise.task.gateway.mapper.ProfileMapper;
 import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
 import ru.leti.wise.task.gateway.utils.SecurityUtils;
@@ -57,7 +58,7 @@ public class SecurityService {
     private String generateAccessToken(ProfileOuterClass.Profile user) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("wise-task")
+                .issuer(jwtProperties.issuer())
                 .subject(user.getId())
                 .issuedAt(now)
                 .expiresAt(now.plus(jwtProperties.accessExpiresAt()))
@@ -70,7 +71,7 @@ public class SecurityService {
     private String generateRefreshToken(ProfileOuterClass.Profile user) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("wise-task")
+                .issuer(jwtProperties.issuer())
                 .subject(user.getId())
                 .issuedAt(now)
                 .expiresAt(now.plus(jwtProperties.refreshExpiresAt()))
