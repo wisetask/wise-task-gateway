@@ -36,7 +36,7 @@ public class SecurityService {
 
     public Token signUp(SignUpRequest request) {
         log.debug("signUp request, {}", request.getProfile().getEmail());
-        var profile = profileGrpcService.signUp(profileMapper.toProfile(request.getProfile()));
+        var profile = profileGrpcService.signUp(profileMapper.toProfile(request.getProfile()), false);
         log.info("signUp request, signed up profile {}", profile.getId());
         return new Token(
                 generateAccessToken(profile),

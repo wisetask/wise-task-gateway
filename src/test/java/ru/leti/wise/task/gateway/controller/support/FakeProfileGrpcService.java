@@ -96,7 +96,7 @@ public class FakeProfileGrpcService extends ProfileGrpcService {
     }
 
     @Override
-    public Profile signUp(Profile profile) {
+    public Profile signUp(Profile profile, Boolean isExternal) {
         profiles.put(profile.getId(), profile);
         return profile;
     }

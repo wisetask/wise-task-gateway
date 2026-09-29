@@ -3,10 +3,10 @@ package ru.leti.wise.task.gateway.controller.support;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import ru.leti.wise.task.gateway.configuration.JwtProperties;
 import ru.leti.wise.task.gateway.controller.AuthController;
 import ru.leti.wise.task.gateway.controller.GraphController;
@@ -14,6 +14,7 @@ import ru.leti.wise.task.gateway.controller.PluginController;
 import ru.leti.wise.task.gateway.controller.ProfileController;
 import ru.leti.wise.task.gateway.controller.StatisticsController;
 import ru.leti.wise.task.gateway.controller.TaskController;
+import ru.leti.wise.task.gateway.dto.UserCredentials;
 import ru.leti.wise.task.gateway.mapper.GraphMapperImpl;
 import ru.leti.wise.task.gateway.mapper.PaginationMapperImpl;
 import ru.leti.wise.task.gateway.mapper.PluginMapperImpl;
@@ -32,6 +33,7 @@ import ru.leti.wise.task.gateway.service.grpc.statistic.StatisticsGrpcService;
 import ru.leti.wise.task.gateway.service.grpc.task.TaskGrpcService;
 
 import java.time.Duration;
+import java.util.List;
 
 /**
  * Поднимает мини-Spring-контекст: реальные мапперы, реальные сервисы и реальные контроллеры,
@@ -97,12 +99,18 @@ public abstract class AbstractControllerTest {
         return context.getBean(controllerType);
     }
 
+    /**
+     * Кладёт в SecurityContext тот же principal, что и продовый конвертер JWT:
+     * {@link UserCredentials} (он сам является {@link org.springframework.security.core.Authentication},
+     * а его {@code getPrincipal()} возвращает {@code this}).
+     */
     protected void authenticateAs(String userId) {
-        var jwt = Jwt.withTokenValue("test-token")
-                .header("alg", "none")
-                .subject(userId)
-                .claim("role", "AUTHOR")
-                .build();
-        SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwt));
+        var credentials = new UserCredentials(
+                userId,
+                userId + "@example.com",
+                "AUTHOR",
+                List.of(new SimpleGrantedAuthority("ROLE_AUTHOR"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(credentials);
     }
 }

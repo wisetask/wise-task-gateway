@@ -82,10 +82,11 @@ public class ProfileGrpcService {
         return profile;
     }
 
-    public Profile signUp(Profile profile) {
+    public Profile signUp(Profile profile, Boolean isExternal) {
         log.debug("ProfileService.signUp request, email {}", profile.getEmail());
         var request = ProfileGrpc.SignUpRequest.newBuilder()
                 .setProfile(profile)
+                .setIsExternal(isExternal)
                 .build();
 
         var created = profileService.signUp(request).getProfile();
