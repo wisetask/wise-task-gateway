@@ -1,10 +1,15 @@
 package ru.leti.wise.task.gateway.configuration;
 
 import lombok.RequiredArgsConstructor;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -16,6 +21,8 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 
+@Slf4j
+@EnableCaching
 @Configuration
 @RequiredArgsConstructor
 public class CacheConfiguration {
@@ -23,6 +30,19 @@ public class CacheConfiguration {
 
     @Value("${app.cache.ttl}")
     private Duration cacheTtl;
+
+    @Bean
+    public CacheManager localCacheManager(
+            @Value("${cache.max-size:1000}") long maxSize,
+            @Value("${cache.ttl:1h}") Duration ttl
+    ) {
+        log.debug("localCacheManager configuration, configuring cache with maxSize={} and ttl={}", maxSize, ttl);
+        var cacheManager = new CaffeineCacheManager();
+        cacheManager.setCaffeine(Caffeine.newBuilder()
+                .maximumSize(maxSize)
+                .expireAfterWrite(ttl));
+        return cacheManager;
+    }
 
     @Bean
     public RedisCacheConfiguration redisCacheConfiguration() {
@@ -42,6 +62,7 @@ public class CacheConfiguration {
     }
 
     @Bean
+    @Primary
     public CacheManager cacheManager(
             RedisConnectionFactory connectionFactory
     ) {

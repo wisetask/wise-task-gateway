@@ -1,11 +1,32 @@
+input PluginFilterInput {
+    name: String
+    description: String
+    category: String
+    graphType: GraphType
+    isValid: Boolean
+    pluginType: PluginType
+    isInternal: Boolean
+    authorId: String
+}
+
+input GetAllPluginRequestInput {
+    pagination: PaginationRequestInput
+    filter: PluginFilterInput
+}
+
+type GetAllPluginsResponse {
+    items: [Plugin!]
+    pagination: PaginationResponse
+}
+
 input PluginInput {
-    id: ID!
+    id: ID
     name: String!
     description: String!
     category: String!
     jarName: String
     jarFile: String
-    authorId: ID!
+    authorId: ID
     isValid: Boolean!
     graphType: GraphType!
     beanName: String
@@ -36,9 +57,7 @@ type Plugin {
     name: String!
     description: String!
     category: String!
-    jarName: String
-    jarFile: String
-    authorId: ID!
+    author: Profile
     graphType: GraphType!
     isValid: Boolean!
     beanName: String
@@ -52,7 +71,7 @@ type ImplementationResult {
 }
 
 type GraphTestResult {
-    graphId: ID!
+    graph: Graph
     originalTimeResult: Int!
     timeResult: Int!
     result: String!

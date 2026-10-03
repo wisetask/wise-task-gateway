@@ -1,19 +1,19 @@
 package ru.leti.wise.task.gateway.service.grpc.profile;
 
-import com.google.protobuf.Empty;
 import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.leti.wise.task.profile.ProfileGrpc;
+import ru.leti.wise.task.profile.ProfileGrpc.GetAllProfilesRequest;
+import ru.leti.wise.task.profile.ProfileGrpc.GetAllProfilesResponse;
 import ru.leti.wise.task.profile.ProfileOuterClass.Profile;
 import ru.leti.wise.task.profile.ProfileServiceGrpc.ProfileServiceBlockingStub;
 
 import java.util.List;
 
 
+@Slf4j
 @Component
 @Observed
 @RequiredArgsConstructor
@@ -21,82 +21,93 @@ public class ProfileGrpcService {
 
     private final ProfileServiceBlockingStub profileService;
 
-    public List<Profile> getAllProfiles() {
-        var request = Empty.newBuilder().build();
-
-        return profileService.getAllProfiles(request).getProfileList();
+    public GetAllProfilesResponse getAllProfiles(GetAllProfilesRequest request) {
+        log.debug("ProfileService.getAllProfiles request, {}", request);
+        var response = profileService.getAllProfiles(request);
+        log.debug("ProfileService.getAllProfiles request, fetched {} profiles", response.getItemsCount());
+        return response;
     }
 
-    @Cacheable(value = "profile", key = "#userId")
-    public Profile getProfile(String userId) {
+    public Profile getProfile(String id) {
+        log.debug("ProfileService.getProfile request, profile id {}", id);
         var request = ProfileGrpc.GetProfileRequest.newBuilder()
-                .setProfileId(userId)
+                .setProfileId(id)
                 .build();
 
-        return profileService.getProfile(request).getProfile();
+        var profile = profileService.getProfile(request).getProfile();
+        log.debug("ProfileService.getProfile request, fetched profile {}", profile.getId());
+        return profile;
     }
 
-    @Cacheable(value = "profile", key = "#email")
     public Profile getProfileByEmail(String email) {
+        log.debug("ProfileService.getProfileByEmail request, email {}", email);
         var request = ProfileGrpc.GetProfileByEmailRequest.newBuilder()
                 .setEmail(email)
                 .build();
 
-        return profileService.getProfileByEmail(request).getProfile();
+        var profile = profileService.getProfileByEmail(request).getProfile();
+        log.debug("ProfileService.getProfileByEmail request, fetched profile {}", profile.getId());
+        return profile;
     }
 
-    @CacheEvict(
-            value = "profile",
-            key = "#userId"
-    )
-    public void deleteProfile(String userId) {
+    public void deleteProfile(String id) {
+        log.debug("ProfileService.deleteProfile request, profile id {}", id);
         var request = ProfileGrpc.DeleteProfileRequest.newBuilder()
-                .setProfileId(userId)
+                .setProfileId(id)
                 .build();
 
         profileService.deleteProfile(request);
     }
 
-    @CachePut(
-            value = "profile",
-            key = "#profile.email"
-    )
     public Profile updateProfile(Profile profile) {
+        log.debug("ProfileService.updateProfile request, profile id {}", profile.getId());
         var request = ProfileGrpc.UpdateProfileRequest.newBuilder()
                 .setProfile(profile)
                 .build();
 
-        return profileService.updateProfile(request).getProfile();
+        var updated = profileService.updateProfile(request).getProfile();
+        log.debug("ProfileService.updateProfile request, updated profile {}", updated.getId());
+        return updated;
     }
 
     public Profile signIn(String email, String password) {
+        log.debug("ProfileService.signIn request, email {}", email);
         var request = ProfileGrpc.SignInRequest.newBuilder()
                 .setEmail(email)
                 .setPassword(password)
                 .build();
 
-        return profileService.signIn(request).getProfile();
+        var profile = profileService.signIn(request).getProfile();
+        log.debug("ProfileService.signIn request, signed in profile {}", profile.getId());
+        return profile;
     }
 
     public Profile signUp(Profile profile, Boolean isExternal) {
+        log.debug("ProfileService.signUp request, email {}", profile.getEmail());
         var request = ProfileGrpc.SignUpRequest.newBuilder()
                 .setProfile(profile)
                 .setIsExternal(isExternal)
                 .build();
 
-        return profileService.signUp(request).getProfile();
+        var created = profileService.signUp(request).getProfile();
+        log.debug("ProfileService.signUp request, signed up profile {}", created.getId());
+        return created;
     }
 
     public Profile resetPassword(String recoveryToken, String newPassword) {
+        log.debug("ProfileService.resetPassword request, resetting password");
         var request = ProfileGrpc.ResetPasswordRequest.newBuilder()
                 .setRecoveryToken(recoveryToken)
                 .setNewPassword(newPassword)
                 .build();
 
-        return profileService.resetPassword(request).getProfile();
+        var profile = profileService.resetPassword(request).getProfile();
+        log.debug("ProfileService.resetPassword request, reset password for profile {}", profile.getId());
+        return profile;
     }
 
     public void sendResetPasswordEmail(String email) {
+        log.debug("ProfileService.sendResetPasswordEmail request, email {}", email);
         var request = ProfileGrpc.SendResetPasswordEmailRequest.newBuilder()
                 .setEmail(email)
                 .build();
@@ -105,6 +116,7 @@ public class ProfileGrpcService {
     }
 
     public void changePassword(String id, String oldPassword, String newPassword) {
+        log.debug("ProfileService.changePassword request, profile id {}", id);
         var request = ProfileGrpc.ChangePasswordRequest.newBuilder().setProfileId(id)
                 .setOldPassword(oldPassword)
                 .setNewPassword(newPassword)
@@ -113,5 +125,11 @@ public class ProfileGrpcService {
         profileService.changePassword(request);
     }
 
-
+    public List<Profile> getProfilesByIds(List<String> profileIds) {
+        log.debug("ProfileService.getProfilesByIds request, profile ids {}", profileIds);
+        var request = ProfileGrpc.ProfileIds.newBuilder().addAllProfileIds(profileIds).build();
+        var profiles = profileService.getProfilesByIds(request).getProfilesList();
+        log.debug("ProfileService.getProfilesByIds request, fetched {} profiles", profiles.size());
+        return profiles;
+    }
 }

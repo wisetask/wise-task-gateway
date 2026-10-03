@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.mapper.StatisticMapper;
+import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
 import ru.leti.wise.task.gateway.service.grpc.statistic.StatisticsGrpcService;
 
 
@@ -19,10 +20,14 @@ import ru.leti.wise.task.gateway.service.grpc.statistic.StatisticsGrpcService;
 public class StatisticsController {
     private final StatisticsGrpcService statisticsGrpcService;
     private final StatisticMapper statisticMapper;
+    private final GraphQlMetrics metrics;
 
     @QueryMapping
-    @PreAuthorize("hasAnyRole(\"USER\",\"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     public StatisticResponse getStatistic(@Argument StatisticRequestInput request) throws Exception {
+        metrics.increment("getStatistic");
         return statisticMapper.toStatistic(
                 statisticsGrpcService.getStatistic(
                         statisticMapper.toStatistic(request)

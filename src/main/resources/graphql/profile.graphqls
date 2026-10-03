@@ -1,3 +1,21 @@
+input ProfileFilterInput {
+    email: String
+    firstName: String
+    lastName: String
+    patronymic: String
+    profileRole: [String!]
+}
+
+input GetAllProfilesRequestInput {
+    pagination: PaginationRequestInput
+    filter: ProfileFilterInput
+}
+
+type GetAllProfilesResponse {
+    items: [Profile!]
+    pagination: PaginationResponse
+}
+
 input SignInRequest {
     email: String!
     password: String!

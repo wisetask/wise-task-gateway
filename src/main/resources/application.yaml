@@ -13,7 +13,7 @@ spring:
 grpc:
   service:
     graph:
-      host: ${GRAPH_GRPC_PORT:localhost}
+      host: ${GRAPH_APP_NAME:localhost}
       port: ${GRAPH_GRPC_PORT:6565}
     profile:
       host: ${PROFILE_APP_NAME:localhost}
@@ -32,10 +32,11 @@ server:
 
 security:
   jwt:
-    public-key: file:wise-task-gateway/src/main/resources/certs/public.pem
-    private-key: file:wise-task-gateway/src/main/resources/certs/private.pem
+    public-key: file:src/main/resources/certs/public.pem
+    private-key: file:src/main/resources/certs/private.pem
     access-expires-at: ${JWT_ACCESS_EXPIRES_AT:1h}
     refresh-expires-at: ${JWT_REFRESH_EXPIRES_AT:7d}
+    issuer: wise-task
 
 
   cors:
@@ -49,6 +50,10 @@ logging:
   level:
     ru.leti.wise.task.gateway: ${GATEWAY_LOGGING_LEVEL:INFO}
     org.springframework.security: ${GATEWAY_LOGGING_LEVEL:INFO}
+
+cache:
+  max-size: ${CACHE_MAX_SIZE:1000}
+  ttl: ${CACHE_TTL:1h}
 
 
 management:
@@ -79,6 +84,8 @@ management:
 
 app:
   cache:
-    ttl: 1m
+    ttl: 1h
   oauth2:
-    trusted-issuers: https://accounts.google.com,https://id.vk.ru
+    trusted-issuers:
+      google-issuer: https://accounts.google.com
+      vk-issuer: https://id.vk.ru

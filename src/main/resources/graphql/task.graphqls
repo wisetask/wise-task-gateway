@@ -1,3 +1,34 @@
+input TaskFilterInput {
+    name: String
+    description: String
+    category: String
+    taskType: TaskType
+    authorId: String
+    isPublic: Boolean
+}
+
+input GetAllTaskRequestInput {
+    pagination: PaginationRequestInput
+    filter: TaskFilterInput
+}
+
+type GetAllTaskResponse {
+    items: [Task!]
+    pagination: PaginationResponse
+}
+
+input GetAllTaskSolutionsRequestInput {
+    taskId: String
+    authorId: String
+    isCorrect: Boolean
+    pagination: PaginationRequestInput
+}
+
+type GetAllTaskSolutionsResponse {
+    items: [Solution!]
+    pagination: PaginationResponse
+}
+
 enum TaskType {
     GRAPH
     IMPLEMENTATION
@@ -26,7 +57,7 @@ input TaskGraphInput {
     description: String!
     category: String!
     taskType: TaskType!
-    authorId: String!
+    authorId: String
     isPublic: Boolean!
     isHiddenMistake: Boolean!
     graph: GraphInput
@@ -35,16 +66,35 @@ input TaskGraphInput {
 }
 
 input TaskImplementationInput {
-    id: ID!
+    id: ID
     name: String!
     description: String!
     category: String!
     taskType: TaskType!
-    authorId: String!
+    authorId: String
     isPublic: Boolean!
     pluginId: String!
 }
-# -------------------------------------------------------------------------
+
+input PluginStringInput {
+    key: String!
+    value: String!
+}
+
+input SolutionGraphInput {
+    id: ID
+    taskId: String!
+    authorId: String
+    graph: GraphInput!
+    pluginsInput: [PluginStringInput!]
+}
+
+input SolutionImplementationInput {
+    id: ID
+    taskId: String!
+    authorId: String
+    code: String!
+}
 
 interface Task {
     id: ID!
@@ -52,7 +102,7 @@ interface Task {
     description: String!
     category: String!
     taskType: TaskType!
-    authorId: String!
+    author: Profile
     isPublic: Boolean!
 }
 
@@ -64,7 +114,7 @@ type Rule {
 }
 
 type PluginInfo {
-    pluginId: String!
+    plugin: Plugin
     value: String!
     mistakeText: String
     sign: String
@@ -77,7 +127,7 @@ type TaskGraph implements Task {
     description: String!
     category: String!
     taskType: TaskType!
-    authorId: String!
+    author: Profile
     isPublic: Boolean!
     isHiddenMistake: Boolean!
     graph: Graph
@@ -91,45 +141,23 @@ type TaskImplementation implements Task {
     description: String!
     category: String!
     taskType: TaskType!
-    authorId: String!
+    author: Profile
     isPublic: Boolean!
-    pluginId: String!
-}
-# ---------------------------------------------------------------------------------
-
-input PluginStringInput {
-    key: String!
-    value: String!
+    plugin: Plugin
 }
 
-input SolutionGraphInput {
-    id: ID!
-    taskId: String!
-    authorId: String!
-    graph: GraphInput!
-    pluginsInput: [PluginStringInput!]
-}
-
-input SolutionImplementationInput {
-    id: ID!
-    taskId: String!
-    authorId: String!
-    code: String!
-}
-
-# ---------------------------------------------------------------------------------
 
 interface Solution {
     id: ID!
-    taskId: String!
-    authorId: String!
+    task: Task
+    author: Profile
     isCorrect: Boolean!
 }
 
 type SolutionGraph implements Solution {
     id: ID!
-    taskId: String!
-    authorId: String!
+    task: Task
+    author: Profile
     isCorrect: Boolean!
     graph: Graph!
     pluginResults: [PluginResult]!
@@ -137,14 +165,14 @@ type SolutionGraph implements Solution {
 
 type SolutionImplementation implements Solution {
     id: ID!
-    taskId: String!
-    authorId: String!
+    task: Task
+    author: Profile
     isCorrect: Boolean!
     implementationResult: [GraphResult]!
 }
 
 type PluginResult {
-    pluginId: String!
+    plugin: Plugin
     isCorrect: Boolean!
     value: String!
     trueValue: String!

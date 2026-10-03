@@ -1,29 +1,36 @@
 package ru.leti.wise.task.gateway.mapper;
 
 import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 import ru.leti.graphql.types.*;
+import ru.leti.wise.task.profile.ProfileOuterClass;
+import ru.leti.wise.task.task.TaskGrpc;
+import ru.leti.wise.task.task.TaskGrpc.GetAllTaskRequest;
+import ru.leti.wise.task.task.TaskGrpc.TaskFilter;
 import ru.leti.wise.task.task.TaskOuterClass;
 
-import java.util.List;
 
 @Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = {GraphMapper.class, PluginMapper.class})
+        uses = {GraphMapper.class, PluginMapper.class, ProfileMapper.class})
 public interface TaskMapper {
 
+    TaskFilter toTaskFilter(TaskFilterInput filter);
+    GetAllTaskRequest toGetAllRequest(GetAllTaskRequestInput request);
+
+    @Mapping(target = "conditionList", source = "condition")
+    @Mapping(target = "graph", source = "graph", qualifiedByName = "graphWithAuthor")
+    TaskOuterClass.TaskGraph toGrpcTaskGraph(TaskGraphInput taskGraph, @Context String authorId);
 
     @Named("toTask")
-    default Task toTask(TaskOuterClass.Task task) {
+    default Task toTask(TaskOuterClass.Task task, ProfileOuterClass.Profile profile) {
         if (task.hasTaskGraph()) {
-            return toTaskGraph(task);
-        } else if (task.hasTaskImplementation()) {
-            return toTaskImplementation(task);
+            return toTaskGraph(task, profile);
+        } else {
+            return toTaskImplementation(task, profile);
         }
-        throw new RuntimeException("123"); //TODO: поправить ошибки, которые никогда не возникнут
     }
 
-    @IterableMapping(qualifiedByName = "toTask")
-    List<Task> toTasks(List<TaskOuterClass.Task> tasks);
 
     @Mapping(target = "taskImplementation", ignore = true)
     @Mapping(target = "taskGraph", source = ".")
@@ -37,10 +44,17 @@ public interface TaskMapper {
     TaskOuterClass.Task toTaskImplementation(TaskImplementationInput taskImplementation, @Context String authorId);
 
     @Mapping(target = ".", source = "task.taskGraph")
-    TaskGraph toTaskGraph(TaskOuterClass.Task task);
+    @Mapping(target = "id", source = "task.id")
+    @Mapping(target = "author", source = "profile")
+    TaskGraph toTaskGraph(TaskOuterClass.Task task, ProfileOuterClass.Profile profile);
 
     @Mapping(target = ".", source = "task.taskImplementation")
-    TaskImplementation toTaskImplementation(TaskOuterClass.Task task);
+    @Mapping(target = "id", source = "task.id")
+    @Mapping(target = "author", source = "profile")
+    TaskImplementation toTaskImplementation(TaskOuterClass.Task task, ProfileOuterClass.Profile profile);
+
+    @Mapping(target = "plugin", ignore = true)
+    PluginInfo toPluginInfo(TaskOuterClass.PluginInfo pluginInfo);
 
     default TaskOuterClass.TaskType toTaskType(TaskType taskType) {
         return TaskOuterClass.TaskType.valueOf(taskType.name());
@@ -48,5 +62,9 @@ public interface TaskMapper {
 
     default TaskOuterClass.PluginType toPluginType(PluginType pluginType) {
         return TaskOuterClass.PluginType.valueOf(pluginType.name());
+    }
+
+    default PluginType toPluginType(TaskOuterClass.PluginType pluginType) {
+        return PluginType.valueOf(pluginType.name());
     }
 }

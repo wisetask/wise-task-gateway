@@ -1,22 +1,23 @@
 type Query {
     #profile
-    getAllProfiles: [Profile]!
+    getAllProfiles(request: GetAllProfilesRequestInput!): GetAllProfilesResponse!
     getProfile(id: ID!): Profile!
 
     #graph
     getGraphById(id: ID!): Graph!
-    getGraphLibrary: [Graph]!
+    getAllGraphs(request: GetAllGraphsRequestInput!): GetAllGraphsResponse!
 
     #plugin
-    getAllPlugins: [Plugin]!
+    getAllPlugins(request: GetAllPluginRequestInput!): GetAllPluginsResponse!
     getPlugin(id: ID!): Plugin!
 
     #task
     getTask(id: ID!): Task!
-    getAllTasks: [Task]!
+    getAllTasks(request: GetAllTaskRequestInput!): GetAllTaskResponse!
+
+    #solution
     getTaskSolution(id: ID!): Solution!
-    getAllTaskSolutions(userId: ID!, taskId: ID!): [Solution]!
-    getUserSolutionStatistic(userId: ID!): [Solution]!
+    getAllTaskSolutions(request: GetAllTaskSolutionsRequestInput!): GetAllTaskSolutionsResponse!
 
     #event
     getStatistic(request: StatisticRequestInput!): StatisticResponse!
@@ -26,6 +27,7 @@ type Mutation {
     #profile
     signUp(signUpRequest: SignUpRequest!): Token!
     signIn(signInRequest: SignInRequest!): Token!
+    refreshToken(refreshToken: String!): Token!
     sendResetPasswordEmail(email: String!): String!
     resetPassword(resetPasswordRequest: ResetPasswordRequest!): Token!
     changePassword(id: ID!,oldPassword: String!, newPassword: String!): String!

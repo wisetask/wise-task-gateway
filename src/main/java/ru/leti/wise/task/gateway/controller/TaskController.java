@@ -6,147 +6,136 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import ru.leti.graphql.types.*;
-import ru.leti.wise.task.gateway.dto.UserCredentials;
-import ru.leti.wise.task.gateway.mapper.SolutionMapper;
-import ru.leti.wise.task.gateway.mapper.TaskMapper;
+import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
+import ru.leti.wise.task.gateway.service.TaskService;
 import ru.leti.wise.task.gateway.service.grpc.task.TaskGrpcService;
-
-import java.util.List;
+import ru.leti.wise.task.gateway.utils.SecurityUtils;
 
 @Observed
 @Controller
 @RequiredArgsConstructor
 public class TaskController {
 
-    private final TaskMapper taskMapper;
-    private final SolutionMapper solutionMapper;
-    private final TaskGrpcService taskGrpcService;
+    private final TaskService taskService;
+    private final GraphQlMetrics metrics;
 
 
     @MutationMapping
-    @PreAuthorize(
-            "hasRole(\"AUTHOR\") and " +
-                    "@taskGrpcService.getTask(#id).getAuthorId().equals(authentication.principal.profile.id) or" +
-                    " hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            hasRole("AUTHOR") and
+            @taskGrpcService.getTask(#id).getAuthorId().equals(authentication.principal.id) or
+            hasRole("ADMIN")
+            """)
     public String deleteTask(@Argument String id) {
-        taskGrpcService.deleteTask(id);
-        return id;
+        metrics.increment("deleteTask");
+        return taskService.deleteTask(id);
     }
 
 
     @QueryMapping
-    @PreAuthorize(value = "hasRole(\"AUTHOR\") and " +
-            "@taskGrpcService.getTask(#taskId).getAuthorId().equals(authentication.principal.profile.id) or" +
-            " hasRole(\"ADMIN\")")
-    public List<Solution> getAllTaskSolutions(@Argument String userId, @Argument String taskId) {
-        return solutionMapper.toSolutions(taskGrpcService.getAllTaskSolutions(taskId, userId));
+    @PreAuthorize("""
+            authentication.principal.id.equals(#request.authorId) or
+            hasRole("AUTHOR") and
+            @taskGrpcService.getTask(#request.taskId).getAuthorId().equals(authentication.principal.id) or
+            hasRole("ADMIN")
+            """)
+    public GetAllTaskSolutionsResponse getAllTaskSolutions(@Argument GetAllTaskSolutionsRequestInput request) {
+        metrics.increment("getAllTaskSolutions");
+        return taskService.getAllTaskSolutionsResponse(request);
     }
 
     @QueryMapping
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
-    public List<Task> getAllTasks() {
-        return taskMapper.toTasks(taskGrpcService.getAllTasks());
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
+    public GetAllTaskResponse getAllTasks(@Argument GetAllTaskRequestInput request) {
+        metrics.increment("getAllTasks");
+        return taskService.getAllTaskResponse(request);
     }
 
 
     @QueryMapping
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     public Task getTask(@Argument String id) {
-        var taskResponse = taskGrpcService.getTask(id);
-        return taskMapper.toTaskGraph(taskResponse);
+        metrics.increment("getTask");
+        return taskService.getTask(id);
     }
 
     @QueryMapping
-    @PreAuthorize(value = "hasRole(\"USER\") and " +
-            "@taskGrpcService.getTaskSolution(#id).getAuthorId().equals(authentication.principal.id)" +
-            " or hasRole(\"AUTHOR\") and " +
-            "@taskGrpcService.getTask(taskGrpcService.getTaskSolution(#id).getTaskId())" +
-            ".getAuthorId().equals(authentication.principal.id) or" +
-            " hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            @taskGrpcService.getTaskSolution(#id).getAuthorId().equals(authentication.principal.id) or
+            hasRole("AUTHOR") and
+            @taskGrpcService.getTask(@taskGrpcService.getTaskSolution(#id).getTaskId())
+                    .getAuthorId().equals(authentication.principal.id) or
+            hasRole("ADMIN")
+            """)
     public Solution getTaskSolution(@Argument String id) {
-        var solution = taskGrpcService.getTaskSolution(id);
-        return solutionMapper.toSolution(solution);
-    }
-
-
-    @QueryMapping
-    @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
-    public List<Solution> getUserSolutionStatistic(@Argument String userId) {
-        return solutionMapper.toSolutions(taskGrpcService.getUserSolutionStatistic(userId));
+        metrics.increment("getTaskSolution");
+        return taskService.getTaskSolution(id);
     }
 
 
     @MutationMapping
-    @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
-    public TaskGraph createTaskGraph(
-            @Argument TaskGraphInput task,
-            @AuthenticationPrincipal UserCredentials user
-    ) {
-        var taskGrpc = taskGrpcService.createTask(taskMapper.toTaskGraph(task, user.getId()));
-        return taskMapper.toTaskGraph(taskGrpc);
+    @PreAuthorize("""
+            hasAnyRole("AUTHOR", "ADMIN")
+            """)
+    public TaskGraph createTaskGraph(@Argument TaskGraphInput task) {
+        metrics.increment("createTaskGraph");
+        return taskService.createTaskGraph(task, SecurityUtils.getUserId());
     }
 
 
     @MutationMapping
-    @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
-    public TaskImplementation createTaskImplementation(
-            @Argument TaskImplementationInput task,
-            @AuthenticationPrincipal UserCredentials user
-    ) {
-        var taskGrpc = taskGrpcService.createTask(taskMapper.toTaskImplementation(task, user.getId()));
-        return taskMapper.toTaskImplementation(taskGrpc);
+    @PreAuthorize("""
+            hasAnyRole("AUTHOR", "ADMIN")
+            """)
+    public TaskImplementation createTaskImplementation(@Argument TaskImplementationInput task) {
+        metrics.increment("createTaskImplementation");
+        return taskService.createTaskImplementation(task, SecurityUtils.getUserId());
     }
 
 
     @MutationMapping
-    @PreAuthorize("hasRole(\"AUTHOR\") " +
-            "and @taskGrpcService.getTask(#task.getId()).getAuthorId().equals(authentication.principal.id) " +
-            "or hasRole(\"ADMIN\")")
-    public TaskGraph updateTaskGraph(
-            @Argument TaskGraphInput task,
-            @AuthenticationPrincipal UserCredentials user
-    ) {
-        var taskGrpc = taskGrpcService.updateTask(
-                taskMapper.toTaskGraph(task, user.getId()));
-        return taskMapper.toTaskGraph(
-                taskGrpc
-        );
+    @PreAuthorize("""
+            hasRole("AUTHOR") and
+            @taskGrpcService.getTask(#task.getId()).getAuthorId().equals(authentication.principal.id) or
+            hasRole("ADMIN")
+            """)
+    public TaskGraph updateTaskGraph(@Argument TaskGraphInput task) {
+        metrics.increment("updateTaskGraph");
+        return taskService.updateTaskGraph(task, SecurityUtils.getUserId());
     }
 
     @MutationMapping
-    @PreAuthorize("hasRole(\"AUTHOR\") " +
-            "and @taskGrpcService.getTask(#task.getId()).getAuthorId().equals(authentication.principal.id) " + //TODO вынести в бизнес логику
-            "or hasRole(\"ADMIN\")")
-    public TaskImplementation updateTaskImplementation(
-            @Argument TaskImplementationInput task,
-            @AuthenticationPrincipal UserCredentials user
-    ) {
-        var taskGrpc = taskGrpcService.updateTask(
-                taskMapper.toTaskImplementation(task, user.getId())
-        );
-        return taskMapper.toTaskImplementation(taskGrpc);
+    @PreAuthorize("""
+            hasRole("AUTHOR") and
+            @taskGrpcService.getTask(#task.getId()).getAuthorId().equals(authentication.principal.id) or
+            hasRole("ADMIN")
+            """)
+    public TaskImplementation updateTaskImplementation(@Argument TaskImplementationInput task) {
+        metrics.increment("updateTaskImplementation");
+        return taskService.updateTaskImplementation(task, SecurityUtils.getUserId());
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
-    public SolutionGraph solveTaskGraph(
-            @Argument SolutionGraphInput solution,
-            @AuthenticationPrincipal UserCredentials user
-    ) {
-        var solutionGrpc = taskGrpcService.solveTask(solutionMapper.toSolutionGraph(solution, user.getId()));
-        return solutionMapper.toSolutionGraph(solutionGrpc);
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
+    public SolutionGraph solveTaskGraph(@Argument SolutionGraphInput solution) {
+        metrics.increment("solveTaskGraph");
+        return taskService.solveTaskGraph(solution, SecurityUtils.getUserId());
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
-    public SolutionImplementation solveTaskImplementation(
-            @Argument SolutionImplementationInput solution,
-            @AuthenticationPrincipal UserCredentials user
-    ) {
-        var solutionGrpc = taskGrpcService.solveTask(solutionMapper.toSolutionImplementation(solution, user.getId()));
-        return solutionMapper.toSolutionImplementation(solutionGrpc);
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
+    public SolutionImplementation solveTaskImplementation(@Argument SolutionImplementationInput solution) {
+        metrics.increment("solveTaskImplementation");
+        return taskService.solveTaskImplementation(solution, SecurityUtils.getUserId());
     }
 }
