@@ -69,24 +69,33 @@ services:
       - "127.0.0.1:${GATEWAY_PORT}:${GATEWAY_PORT}"
     env_file:
       - .env
-    volumes:
-      - ./src/main/resources/application-prod.yaml:/app/config/application-prod.yaml:ro
-      - ./src/main/resources/application-dev.yaml:/app/config/application-dev.yaml:ro
 
-  wise-task-event:
+  wise-task-search:
     build:
-      context: ../wise-task-event
+      context: ../wise-task-search
       dockerfile: Dockerfile
-    container_name: wise-task-event
+    container_name: wise-task-search
     depends_on:
-      - wise-task-event-db
+      - wise-task-db
     ports:
-      - "127.0.0.1:${EVENT_GRPC_PORT}:${EVENT_GRPC_PORT}"
-      - "127.0.0.1:${EVENT_PORT}:${EVENT_PORT}"
-    environment:
-      - MANAGEMENT_METRICS_ENABLE_PROCESS=false
+      - "127.0.0.1:${SEARCH_PORT}:8000"
     env_file:
       - .env
+
+#  wise-task-event:
+#    build:
+#      context: ../wise-task-event
+#      dockerfile: Dockerfile
+#    container_name: wise-task-event
+#    depends_on:
+#      - wise-task-event-db
+#    ports:
+#      - "127.0.0.1:${EVENT_GRPC_PORT}:${EVENT_GRPC_PORT}"
+#      - "127.0.0.1:${EVENT_PORT}:${EVENT_PORT}"
+#    environment:
+#      - MANAGEMENT_METRICS_ENABLE_PROCESS=false
+#    env_file:
+#      - .env
 
   wise-task-event-db:
     image: timescale/timescaledb:2.26.0-pg16
@@ -110,7 +119,7 @@ services:
     restart: always
 
   wise-task-db:
-    image: postgres:17-alpine3.22
+    image: kgrozdanovski/pgvector:17.10-alpine
     container_name: wise-task-db
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
