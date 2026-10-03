@@ -23,35 +23,45 @@ public class AuthController {
     private final GraphQlMetrics metrics;
 
     @MutationMapping
-    @PreAuthorize("isAnonymous()")
+    @PreAuthorize("""
+            isAnonymous()
+            """)
     public Token signIn(@Argument SignInRequest signInRequest) {
         metrics.increment("signIn");
         return securityService.signIn(signInRequest);
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyRole('USER', 'AUTHOR', 'ADMIN')")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     public Token refreshToken(@Argument String refreshToken) {
         metrics.increment("refreshToken");
         return securityService.refreshToken(refreshToken);
     }
 
     @MutationMapping
-    @PreAuthorize("isAnonymous()")
+    @PreAuthorize("""
+            isAnonymous()
+            """)
     public Token signUp(@Argument SignUpRequest signUpRequest) {
         metrics.increment("signUp");
         return securityService.signUp(signUpRequest);
     }
 
     @MutationMapping
-    @PreAuthorize("isAnonymous()")
+    @PreAuthorize("""
+            isAnonymous()
+            """)
     public Token resetPassword(@Argument ResetPasswordRequest resetPasswordRequest) {
         metrics.increment("resetPassword");
         return securityService.resetPassword(resetPasswordRequest);
     }
 
     @MutationMapping
-    @PreAuthorize("isAnonymous()")
+    @PreAuthorize("""
+            isAnonymous()
+            """)
     public String sendResetPasswordEmail(@Argument String email) {
         metrics.increment("sendResetPasswordEmail");
         profileGrpcService.sendResetPasswordEmail(email);
@@ -59,7 +69,10 @@ public class AuthController {
     }
 
     @MutationMapping
-    @PreAuthorize("authentication.principal.id.equals(#id) or hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            authentication.principal.id.equals(#id) or
+            hasRole("ADMIN")
+            """)
     public String changePassword(@Argument String id, @Argument String oldPassword, @Argument String newPassword) {
         metrics.increment("changePassword");
         profileGrpcService.changePassword(id, oldPassword, newPassword);

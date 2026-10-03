@@ -23,10 +23,11 @@ public class TaskController {
 
 
     @MutationMapping
-    @PreAuthorize(
-            "hasRole(\"AUTHOR\") and " +
-            "@taskGrpcService.getTask(#id).getAuthorId().equals(authentication.principal.id) or" +
-            " hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            hasRole("AUTHOR") and
+            @taskGrpcService.getTask(#id).getAuthorId().equals(authentication.principal.id) or
+            hasRole("ADMIN")
+            """)
     public String deleteTask(@Argument String id) {
         metrics.increment("deleteTask");
         return taskService.deleteTask(id);
@@ -34,14 +35,22 @@ public class TaskController {
 
 
     @QueryMapping
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasRole("AUTHOR") and (
+                authentication.principal.id.equals(#request.taskId) or
+                @taskGrpcService.getTask(#request.taskId).getAuthorId().equals(authentication.principal.id)
+            ) or
+            hasRole("ADMIN")
+            """)
     public GetAllTaskSolutionsResponse getAllTaskSolutions(@Argument GetAllTaskSolutionsRequestInput request) {
         metrics.increment("getAllTaskSolutions");
         return taskService.getAllTaskSolutionsResponse(request);
     }
 
     @QueryMapping
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     public GetAllTaskResponse getAllTasks(@Argument GetAllTaskRequestInput request) {
         metrics.increment("getAllTasks");
         return taskService.getAllTaskResponse(request);
@@ -49,19 +58,23 @@ public class TaskController {
 
 
     @QueryMapping
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     public Task getTask(@Argument String id) {
         metrics.increment("getTask");
         return taskService.getTask(id);
     }
 
     @QueryMapping
-    @PreAuthorize(value = "hasRole(\"USER\") and " +
-            "@taskGrpcService.getTaskSolution(#id).getAuthorId().equals(authentication.principal.id)" +
-            " or hasRole(\"AUTHOR\") and " +
-            "@taskGrpcService.getTask(taskGrpcService.getTaskSolution(#id).getTaskId())" +
-            ".getAuthorId().equals(authentication.principal.id) or" +
-            " hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            hasRole("USER") and
+            @taskGrpcService.getTaskSolution(#id).getAuthorId().equals(authentication.principal.id) or
+            hasRole("AUTHOR") and
+            @taskGrpcService.getTask(@taskGrpcService.getTaskSolution(#id).getTaskId())
+                    .getAuthorId().equals(authentication.principal.id) or
+            hasRole("ADMIN")
+            """)
     public Solution getTaskSolution(@Argument String id) {
         metrics.increment("getTaskSolution");
         return taskService.getTaskSolution(id);
@@ -69,7 +82,9 @@ public class TaskController {
 
 
     @MutationMapping
-    @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("AUTHOR", "ADMIN")
+            """)
     public TaskGraph createTaskGraph(@Argument TaskGraphInput task) {
         metrics.increment("createTaskGraph");
         return taskService.createTaskGraph(task, SecurityUtils.getUserId());
@@ -77,7 +92,9 @@ public class TaskController {
 
 
     @MutationMapping
-    @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("AUTHOR", "ADMIN")
+            """)
     public TaskImplementation createTaskImplementation(@Argument TaskImplementationInput task) {
         metrics.increment("createTaskImplementation");
         return taskService.createTaskImplementation(task, SecurityUtils.getUserId());
@@ -85,32 +102,40 @@ public class TaskController {
 
 
     @MutationMapping
-    @PreAuthorize("hasRole(\"AUTHOR\") " +
-            "and @taskGrpcService.getTask(#task.getId()).getAuthorId().equals(authentication.principal.id) " +
-            "or hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            hasRole("AUTHOR") and
+            @taskGrpcService.getTask(#task.getId()).getAuthorId().equals(authentication.principal.id) or
+            hasRole("ADMIN")
+            """)
     public TaskGraph updateTaskGraph(@Argument TaskGraphInput task) {
         metrics.increment("updateTaskGraph");
         return taskService.updateTaskGraph(task, SecurityUtils.getUserId());
     }
 
     @MutationMapping
-    @PreAuthorize("hasRole(\"AUTHOR\") " +
-            "and @taskGrpcService.getTask(#task.getId()).getAuthorId().equals(authentication.principal.id) " +
-            "or hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            hasRole("AUTHOR") and
+            @taskGrpcService.getTask(#task.getId()).getAuthorId().equals(authentication.principal.id) or
+            hasRole("ADMIN")
+            """)
     public TaskImplementation updateTaskImplementation(@Argument TaskImplementationInput task) {
         metrics.increment("updateTaskImplementation");
         return taskService.updateTaskImplementation(task, SecurityUtils.getUserId());
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     public SolutionGraph solveTaskGraph(@Argument SolutionGraphInput solution) {
         metrics.increment("solveTaskGraph");
         return taskService.solveTaskGraph(solution, SecurityUtils.getUserId());
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     public SolutionImplementation solveTaskImplementation(@Argument SolutionImplementationInput solution) {
         metrics.increment("solveTaskImplementation");
         return taskService.solveTaskImplementation(solution, SecurityUtils.getUserId());

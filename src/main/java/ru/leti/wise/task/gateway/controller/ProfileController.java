@@ -27,7 +27,9 @@ public class ProfileController {
 
 
     @QueryMapping
-    @PreAuthorize("hasAnyRole(\"USER\",\"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     public GetAllProfilesResponse getAllProfiles(
             @Argument GetAllProfilesRequestInput request
     ) {
@@ -39,21 +41,28 @@ public class ProfileController {
 
 
     @QueryMapping
-    @PreAuthorize("hasAnyRole(\"USER\",\"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     public Profile getProfile(@Argument String id) {
         metrics.increment("getProfile");
         return profileMapper.toProfile(profileGrpcService.getProfile(id));
     }
 
     @MutationMapping
-    @PreAuthorize("hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            hasRole("ADMIN")
+            """)
     public Profile updateProfile(@Argument ProfileInput profile) {
         metrics.increment("updateProfile");
         return profileMapper.toProfile(profileGrpcService.updateProfile(profileMapper.toProfile(profile)));
     }
 
     @MutationMapping
-    @PreAuthorize("authentication.principal.id.equals(#id) or hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            authentication.principal.id.equals(#id) or
+            hasRole("ADMIN")
+            """)
     public String deleteProfile(@Argument String id) {
         metrics.increment("deleteProfile");
         profileGrpcService.deleteProfile(id);

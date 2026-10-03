@@ -23,7 +23,9 @@ public class StatisticsController {
     private final GraphQlMetrics metrics;
 
     @QueryMapping
-    @PreAuthorize("hasAnyRole(\"USER\",\"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     public StatisticResponse getStatistic(@Argument StatisticRequestInput request) throws Exception {
         metrics.increment("getStatistic");
         return statisticMapper.toStatistic(
