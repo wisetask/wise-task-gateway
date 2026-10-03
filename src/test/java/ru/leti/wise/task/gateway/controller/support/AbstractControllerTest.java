@@ -1,11 +1,13 @@
 package ru.leti.wise.task.gateway.controller.support;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import ru.leti.wise.task.gateway.configuration.JwtProperties;
 import ru.leti.wise.task.gateway.controller.AuthController;
@@ -22,6 +24,7 @@ import ru.leti.wise.task.gateway.mapper.ProfileMapperImpl;
 import ru.leti.wise.task.gateway.mapper.SolutionMapperImpl;
 import ru.leti.wise.task.gateway.mapper.StatisticMapperImpl;
 import ru.leti.wise.task.gateway.mapper.TaskMapperImpl;
+import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
 import ru.leti.wise.task.gateway.service.GraphService;
 import ru.leti.wise.task.gateway.service.PluginService;
 import ru.leti.wise.task.gateway.service.SecurityService;
@@ -51,6 +54,12 @@ public abstract class AbstractControllerTest {
 
     protected AnnotationConfigApplicationContext context;
 
+    protected MeterRegistry meterRegistry;
+
+    protected FakeJwtEncoder jwtEncoder;
+
+    protected FakeJwtDecoder jwtDecoder;
+
     @BeforeEach
     void setUpGatewayContext() {
         taskGrpcService = new FakeTaskGrpcService();
@@ -59,10 +68,10 @@ public abstract class AbstractControllerTest {
         graphGrpcService = new FakeGraphGrpcService();
         statisticsGrpcService = new FakeStatisticsGrpcService();
 
-        JwtEncoder jwtEncoder = parameters -> Jwt.withTokenValue("test-token")
-                .header("alg", "none")
-                .subject(CURRENT_USER_ID)
-                .build();
+        meterRegistry = new SimpleMeterRegistry();
+
+        jwtEncoder = new FakeJwtEncoder();
+        jwtDecoder = new FakeJwtDecoder();
 
         context = new AnnotationConfigApplicationContext();
         context.register(
@@ -74,12 +83,15 @@ public abstract class AbstractControllerTest {
                 TaskController.class, GraphController.class, PluginController.class,
                 ProfileController.class, StatisticsController.class, AuthController.class
         );
+        context.register(GraphQlMetrics.class);
         context.registerBean(TaskGrpcService.class, () -> taskGrpcService);
         context.registerBean(ProfileGrpcService.class, () -> profileGrpcService);
         context.registerBean(PluginGrpcService.class, () -> pluginGrpcService);
         context.registerBean(GraphGrpcService.class, () -> graphGrpcService);
         context.registerBean(StatisticsGrpcService.class, () -> statisticsGrpcService);
         context.registerBean(JwtEncoder.class, () -> jwtEncoder);
+        context.registerBean(JwtDecoder.class, () -> jwtDecoder);
+        context.registerBean(MeterRegistry.class, () -> meterRegistry);
         context.registerBean(JwtProperties.class,
                 () -> new JwtProperties(null, null, Duration.ofHours(1), Duration.ofDays(7), "wise-task"));
         context.refresh();
@@ -97,6 +109,14 @@ public abstract class AbstractControllerTest {
 
     protected <T> T controller(Class<T> controllerType) {
         return context.getBean(controllerType);
+    }
+
+    /**
+     * Сколько раз была вызвана конкретная GraphQL-ручка (метрика {@code graphql.requests}).
+     */
+    protected double graphQlRequests(String operation) {
+        var counter = meterRegistry.find("graphql.requests").tag("operation", operation).counter();
+        return counter == null ? 0d : counter.count();
     }
 
     /**

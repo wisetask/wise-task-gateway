@@ -224,4 +224,17 @@ class TaskControllerTest extends AbstractControllerTest {
         taskGrpcService.putTask(TestData.taskGraph("task-1", "author-1", List.of()));
         assertThat(controller().deleteTask("task-1")).isEqualTo("task-1");
     }
+
+    @Test
+    void everyOperationIncrementsItsOwnMicrometerCounter() {
+        taskGrpcService.putTask(TestData.taskGraph("task-1", "author-1", List.of()));
+
+        controller().getTask("task-1");
+        controller().getTask("task-1");
+        controller().deleteTask("task-1");
+
+        assertThat(graphQlRequests("getTask")).isEqualTo(2d);
+        assertThat(graphQlRequests("deleteTask")).isEqualTo(1d);
+        assertThat(graphQlRequests("getAllTasks")).isZero();
+    }
 }

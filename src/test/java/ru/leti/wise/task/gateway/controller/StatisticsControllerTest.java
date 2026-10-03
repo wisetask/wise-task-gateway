@@ -41,5 +41,7 @@ class StatisticsControllerTest extends AbstractControllerTest {
         assertThat(grpcRequest.getEventType()).isEqualTo("SOLVE");
         assertThat(grpcRequest.getTaskId()).isEqualTo("task-1");
         assertThat(grpcRequest.getUserId()).isEqualTo("user-1");
+
+        assertThat(graphQlRequests("getStatistic")).isEqualTo(1d);
     }
 }

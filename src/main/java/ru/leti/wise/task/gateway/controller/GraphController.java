@@ -7,6 +7,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import ru.leti.graphql.types.*;
+import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
 import ru.leti.wise.task.gateway.service.GraphService;
 import ru.leti.wise.task.gateway.utils.SecurityUtils;
 
@@ -16,28 +17,33 @@ import ru.leti.wise.task.gateway.utils.SecurityUtils;
 public class GraphController {
 
     private final GraphService graphService;
+    private final GraphQlMetrics metrics;
 
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\", \"ADMIN\")")
     @QueryMapping
     public Graph getGraphById(@Argument String id) {
+        metrics.increment("getGraphById");
         return graphService.getGraphById(id);
     }
 
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\", \"ADMIN\")")
     @QueryMapping
     public GetAllGraphsResponse getAllGraphs(@Argument GetAllGraphsRequestInput request) {
+        metrics.increment("getAllGraphs");
         return graphService.getAllGraphsResponse(request);
     }
 
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\", \"ADMIN\")")
     @MutationMapping
     public Graph createGraph(@Argument GraphInput graph) {
+        metrics.increment("createGraph");
         return graphService.createGraph(graph, SecurityUtils.getUserId());
     }
 
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\", \"ADMIN\")")
     @MutationMapping
     public Graph generateGraph(@Argument GenerateGraphRequest generateGraphRequest) {
+        metrics.increment("generateGraph");
         return graphService.generateGraph(generateGraphRequest, SecurityUtils.getUserId());
     }
 
@@ -47,6 +53,7 @@ public class GraphController {
                     "@graphService.isOwnerGraph(authentication.principal.id, #id))")
     @MutationMapping
     public String deleteGraph(@Argument String id) {
+        metrics.increment("deleteGraph");
         return graphService.deleteGraph(id);
     }
 }

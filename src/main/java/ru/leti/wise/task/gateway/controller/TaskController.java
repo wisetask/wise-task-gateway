@@ -8,6 +8,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import ru.leti.graphql.types.*;
+import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
 import ru.leti.wise.task.gateway.service.TaskService;
 import ru.leti.wise.task.gateway.service.grpc.task.TaskGrpcService;
 import ru.leti.wise.task.gateway.utils.SecurityUtils;
@@ -18,6 +19,7 @@ import ru.leti.wise.task.gateway.utils.SecurityUtils;
 public class TaskController {
 
     private final TaskService taskService;
+    private final GraphQlMetrics metrics;
 
 
     @MutationMapping
@@ -26,6 +28,7 @@ public class TaskController {
             "@taskGrpcService.getTask(#id).getAuthorId().equals(authentication.principal.id) or" +
             " hasRole(\"ADMIN\")")
     public String deleteTask(@Argument String id) {
+        metrics.increment("deleteTask");
         return taskService.deleteTask(id);
     }
 
@@ -33,12 +36,14 @@ public class TaskController {
     @QueryMapping
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
     public GetAllTaskSolutionsResponse getAllTaskSolutions(@Argument GetAllTaskSolutionsRequestInput request) {
+        metrics.increment("getAllTaskSolutions");
         return taskService.getAllTaskSolutionsResponse(request);
     }
 
     @QueryMapping
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
     public GetAllTaskResponse getAllTasks(@Argument GetAllTaskRequestInput request) {
+        metrics.increment("getAllTasks");
         return taskService.getAllTaskResponse(request);
     }
 
@@ -46,6 +51,7 @@ public class TaskController {
     @QueryMapping
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
     public Task getTask(@Argument String id) {
+        metrics.increment("getTask");
         return taskService.getTask(id);
     }
 
@@ -57,6 +63,7 @@ public class TaskController {
             ".getAuthorId().equals(authentication.principal.id) or" +
             " hasRole(\"ADMIN\")")
     public Solution getTaskSolution(@Argument String id) {
+        metrics.increment("getTaskSolution");
         return taskService.getTaskSolution(id);
     }
 
@@ -64,6 +71,7 @@ public class TaskController {
     @MutationMapping
     @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
     public TaskGraph createTaskGraph(@Argument TaskGraphInput task) {
+        metrics.increment("createTaskGraph");
         return taskService.createTaskGraph(task, SecurityUtils.getUserId());
     }
 
@@ -71,6 +79,7 @@ public class TaskController {
     @MutationMapping
     @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
     public TaskImplementation createTaskImplementation(@Argument TaskImplementationInput task) {
+        metrics.increment("createTaskImplementation");
         return taskService.createTaskImplementation(task, SecurityUtils.getUserId());
     }
 
@@ -80,6 +89,7 @@ public class TaskController {
             "and @taskGrpcService.getTask(#task.getId()).getAuthorId().equals(authentication.principal.id) " +
             "or hasRole(\"ADMIN\")")
     public TaskGraph updateTaskGraph(@Argument TaskGraphInput task) {
+        metrics.increment("updateTaskGraph");
         return taskService.updateTaskGraph(task, SecurityUtils.getUserId());
     }
 
@@ -88,18 +98,21 @@ public class TaskController {
             "and @taskGrpcService.getTask(#task.getId()).getAuthorId().equals(authentication.principal.id) " +
             "or hasRole(\"ADMIN\")")
     public TaskImplementation updateTaskImplementation(@Argument TaskImplementationInput task) {
+        metrics.increment("updateTaskImplementation");
         return taskService.updateTaskImplementation(task, SecurityUtils.getUserId());
     }
 
     @MutationMapping
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
     public SolutionGraph solveTaskGraph(@Argument SolutionGraphInput solution) {
+        metrics.increment("solveTaskGraph");
         return taskService.solveTaskGraph(solution, SecurityUtils.getUserId());
     }
 
     @MutationMapping
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\",\"ADMIN\")")
     public SolutionImplementation solveTaskImplementation(@Argument SolutionImplementationInput solution) {
+        metrics.increment("solveTaskImplementation");
         return taskService.solveTaskImplementation(solution, SecurityUtils.getUserId());
     }
 }

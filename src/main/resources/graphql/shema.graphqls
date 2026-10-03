@@ -27,6 +27,7 @@ type Mutation {
     #profile
     signUp(signUpRequest: SignUpRequest!): Token!
     signIn(signInRequest: SignInRequest!): Token!
+    refreshToken(refreshToken: String!): Token!
     sendResetPasswordEmail(email: String!): String!
     resetPassword(resetPasswordRequest: ResetPasswordRequest!): Token!
     changePassword(id: ID!,oldPassword: String!, newPassword: String!): String!

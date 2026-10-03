@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 
 import ru.leti.graphql.types.*;
+import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
 import ru.leti.wise.task.gateway.service.PluginService;
 import ru.leti.wise.task.gateway.utils.SecurityUtils;
 
@@ -17,22 +18,26 @@ import ru.leti.wise.task.gateway.utils.SecurityUtils;
 public class PluginController {
 
     private final PluginService pluginService;
+    private final GraphQlMetrics metrics;
 
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\", \"ADMIN\")")
     @MutationMapping
     public ImplementationResult checkPluginImplementation(@Argument String id, @Argument String file) {
+        metrics.increment("checkPluginImplementation");
         return pluginService.checkPluginImplementation(id, file);
     }
 
     @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\", \"ADMIN\")")
     @MutationMapping
     public String checkPluginSolution(@Argument SolutionInput solution) {
+        metrics.increment("checkPluginSolution");
         return pluginService.checkPluginSolution(solution);
     }
 
     @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
     @MutationMapping
     public Plugin createPlugin(@Argument PluginInput plugin) {
+        metrics.increment("createPlugin");
         return pluginService.createPlugin(plugin, SecurityUtils.getUserId());
     }
 
@@ -42,18 +47,21 @@ public class PluginController {
             " or hasRole(\"ADMIN\")")
     @MutationMapping
     public String deletePlugin(@Argument String id) {
+        metrics.increment("deletePlugin");
         return pluginService.deletePlugin(id);
     }
 
     @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
     @QueryMapping
     public GetAllPluginsResponse getAllPlugins(@Argument GetAllPluginRequestInput request) {
+        metrics.increment("getAllPlugins");
         return pluginService.getAllPluginsResponse(request);
     }
 
     @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
     @QueryMapping
     public Plugin getPlugin(@Argument String id) {
+        metrics.increment("getPlugin");
         return pluginService.getPlugin(id);
     }
 
@@ -63,6 +71,7 @@ public class PluginController {
     )
     @MutationMapping
     public Plugin updatePlugin(@Argument PluginInput plugin) {
+        metrics.increment("updatePlugin");
         return pluginService.updatePlugin(plugin, SecurityUtils.getUserId());
     }
 
@@ -71,6 +80,7 @@ public class PluginController {
                     " or hasRole(\"ADMIN\")")
     @MutationMapping
     public String validatePlugin(@Argument String id) {
+        metrics.increment("validatePlugin");
         return pluginService.validatePlugin(id);
     }
 }

@@ -24,4 +24,9 @@ public final class SecurityUtils {
 
         return user.getId();
     }
+
+    public static String getIssuer(Jwt jwt) {
+        var issuer = jwt.getClaims().get("iss");
+        return issuer == null ? null : issuer.toString();
+    }
 }
