@@ -49,7 +49,7 @@ public class PluginController {
 
 
     @PreAuthorize("""
-            (hasRole("AUTHOR") and @pluginService.isOwnerPlugin(authentication.principal.id, #id)) or
+            hasRole("AUTHOR") and @pluginService.isOwnerPlugin(authentication.principal.id, #id) or
             hasRole("ADMIN")
             """)
     @MutationMapping
@@ -87,7 +87,6 @@ public class PluginController {
     }
 
     @PreAuthorize("""
-            (hasRole("AUTHOR") and @pluginService.isOwnerPlugin(authentication.principal.id, #id)) or
             hasRole("ADMIN")
             """)
     @MutationMapping

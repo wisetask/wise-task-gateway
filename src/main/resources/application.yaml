@@ -13,7 +13,7 @@ spring:
 grpc:
   service:
     graph:
-      host: ${GRAPH_GRPC_PORT:localhost}
+      host: ${GRAPH_APP_NAME:localhost}
       port: ${GRAPH_GRPC_PORT:6565}
     profile:
       host: ${PROFILE_APP_NAME:localhost}

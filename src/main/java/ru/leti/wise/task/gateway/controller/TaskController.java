@@ -36,10 +36,9 @@ public class TaskController {
 
     @QueryMapping
     @PreAuthorize("""
-            hasRole("AUTHOR") and (
-                authentication.principal.id.equals(#request.taskId) or
-                @taskGrpcService.getTask(#request.taskId).getAuthorId().equals(authentication.principal.id)
-            ) or
+            authentication.principal.id.equals(#request.authorId) or
+            hasRole("AUTHOR") and
+            @taskGrpcService.getTask(#request.taskId).getAuthorId().equals(authentication.principal.id) or
             hasRole("ADMIN")
             """)
     public GetAllTaskSolutionsResponse getAllTaskSolutions(@Argument GetAllTaskSolutionsRequestInput request) {
@@ -68,7 +67,6 @@ public class TaskController {
 
     @QueryMapping
     @PreAuthorize("""
-            hasRole("USER") and
             @taskGrpcService.getTaskSolution(#id).getAuthorId().equals(authentication.principal.id) or
             hasRole("AUTHOR") and
             @taskGrpcService.getTask(@taskGrpcService.getTaskSolution(#id).getTaskId())
