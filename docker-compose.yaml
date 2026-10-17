@@ -70,8 +70,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./src/main/resources/application-prod.yaml:/app/config/application-prod.yaml:ro
-      - ./src/main/resources/application-dev.yaml:/app/config/application-dev.yaml:ro
+      - ./src/main/resources/application.yaml:/app/config/application.yaml:ro
 #
 #  wise-task-event:
 #    build:
