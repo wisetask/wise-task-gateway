@@ -2,7 +2,7 @@ package ru.leti.wise.task.gateway.controller.support;
 
 import ru.leti.wise.task.event.Statistic.StatisticRequest;
 import ru.leti.wise.task.event.Statistic.StatisticResponse;
-import ru.leti.wise.task.gateway.service.grpc.statistic.StatisticsGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.StatisticsGrpcService;
 
 /**
  * Фейковый statistics-сервис: отдаёт заранее подготовленный ответ.

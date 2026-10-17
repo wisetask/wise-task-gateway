@@ -2,6 +2,7 @@ type Query {
     #profile
     getAllProfiles(request: GetAllProfilesRequestInput!): GetAllProfilesResponse!
     getProfile(id: ID!): Profile!
+    getMyProfile: Profile!
 
     #graph
     getGraphById(id: ID!): Graph!

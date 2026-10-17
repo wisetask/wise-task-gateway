@@ -29,11 +29,11 @@ import ru.leti.wise.task.gateway.service.GraphService;
 import ru.leti.wise.task.gateway.service.PluginService;
 import ru.leti.wise.task.gateway.service.SecurityService;
 import ru.leti.wise.task.gateway.service.TaskService;
-import ru.leti.wise.task.gateway.service.grpc.graph.GraphGrpcService;
-import ru.leti.wise.task.gateway.service.grpc.plugin.PluginGrpcService;
-import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
-import ru.leti.wise.task.gateway.service.grpc.statistic.StatisticsGrpcService;
-import ru.leti.wise.task.gateway.service.grpc.task.TaskGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.GraphGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.PluginGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.ProfileGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.StatisticsGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.TaskGrpcService;
 
 import java.time.Duration;
 import java.util.List;

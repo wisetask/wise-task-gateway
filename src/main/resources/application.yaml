@@ -1,4 +1,7 @@
 spring:
+  graphql:
+    graphiql:
+      enabled: true
   data:
     redis:
       host: ${REDIS_APP_NAME:localhost}

@@ -1,4 +1,4 @@
-package ru.leti.wise.task.gateway.service.grpc.statistic;
+package ru.leti.wise.task.gateway.service.grpc;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

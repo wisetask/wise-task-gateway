@@ -6,11 +6,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;
+import ru.leti.graphql.types.Profile;
 import ru.leti.wise.task.gateway.configuration.JwtProperties;
 import ru.leti.wise.task.gateway.dto.UserCredentials;
 import ru.leti.wise.task.gateway.exception.JwtIssuerException;
-import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
-import ru.leti.wise.task.profile.ProfileOuterClass;
+import ru.leti.wise.task.gateway.service.ProfileService;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import java.util.List;
 public class WiseTaskJwtConverterDecoder implements JwtConverterDecoder {
     private final JwtProperties jwtProperties;
     private final JwtDecoder jwtInternalDecoder;
-    private final ProfileGrpcService profileGrpcService;
+    private final ProfileService profileService;
 
     @Override
     public boolean match(String issuer) {
@@ -40,7 +40,7 @@ public class WiseTaskJwtConverterDecoder implements JwtConverterDecoder {
         }
         if (iss.equals(jwtProperties.issuer())) {
             var email = jwt.getClaimAsString("email");
-            ProfileOuterClass.Profile profile = profileGrpcService.getProfileByEmail(email);;
+            Profile profile = profileService.getProfileByEmail(email);
             var role = profile.getProfileRole().name();
             var id = profile.getId();
             var grantedAuthorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));

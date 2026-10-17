@@ -12,19 +12,25 @@ import ru.leti.graphql.types.GetAllProfilesRequestInput;
 import ru.leti.graphql.types.GetAllProfilesResponse;
 import ru.leti.graphql.types.Profile;
 import ru.leti.graphql.types.ProfileInput;
-import ru.leti.wise.task.gateway.mapper.ProfileMapper;
 import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
-import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
+import ru.leti.wise.task.gateway.service.ProfileService;
+import ru.leti.wise.task.gateway.utils.SecurityUtils;
 
 @Slf4j
 @Observed
 @Controller
 @RequiredArgsConstructor
 public class ProfileController {
-    private final ProfileGrpcService profileGrpcService;
-    private final ProfileMapper profileMapper;
+    private final ProfileService profileService;
     private final GraphQlMetrics metrics;
 
+    @QueryMapping
+    @PreAuthorize("hasAnyRole(\"USER\",\"AUTHOR\",\"ADMIN\")")
+    public Profile getMyProfile(){
+        metrics.increment("getMyProfile");
+        var userId = SecurityUtils.getUserId();
+        return profileService.getProfile(userId);
+    }
 
     @QueryMapping
     @PreAuthorize("""
@@ -34,9 +40,7 @@ public class ProfileController {
             @Argument GetAllProfilesRequestInput request
     ) {
         metrics.increment("getAllProfiles");
-        var grpcRequest = profileMapper.toGetAllRequest(request);
-        var grpcResponse = profileGrpcService.getAllProfiles(grpcRequest);
-        return profileMapper.toGetAllResponse(grpcResponse);
+        return profileService.getAllProfiles(request);
     }
 
 
@@ -46,7 +50,7 @@ public class ProfileController {
             """)
     public Profile getProfile(@Argument String id) {
         metrics.increment("getProfile");
-        return profileMapper.toProfile(profileGrpcService.getProfile(id));
+        return profileService.getProfile(id);
     }
 
     @MutationMapping
@@ -55,7 +59,7 @@ public class ProfileController {
             """)
     public Profile updateProfile(@Argument ProfileInput profile) {
         metrics.increment("updateProfile");
-        return profileMapper.toProfile(profileGrpcService.updateProfile(profileMapper.toProfile(profile)));
+        return profileService.updateProfile(profile);
     }
 
     @MutationMapping
@@ -65,7 +69,6 @@ public class ProfileController {
             """)
     public String deleteProfile(@Argument String id) {
         metrics.increment("deleteProfile");
-        profileGrpcService.deleteProfile(id);
-        return id;
+        return profileService.deleteProfile(id);
     }
 }

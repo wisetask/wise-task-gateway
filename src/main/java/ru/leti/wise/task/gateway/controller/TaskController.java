@@ -10,7 +10,6 @@ import org.springframework.stereotype.Controller;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
 import ru.leti.wise.task.gateway.service.TaskService;
-import ru.leti.wise.task.gateway.service.grpc.task.TaskGrpcService;
 import ru.leti.wise.task.gateway.utils.SecurityUtils;
 
 @Observed

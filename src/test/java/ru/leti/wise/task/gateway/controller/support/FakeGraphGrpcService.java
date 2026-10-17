@@ -1,7 +1,7 @@
 package ru.leti.wise.task.gateway.controller.support;
 
 import io.grpc.Status;
-import ru.leti.wise.task.gateway.service.grpc.graph.GraphGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.GraphGrpcService;
 import ru.leti.wise.task.graph.GraphGrpc.GenerateGraphRequest;
 import ru.leti.wise.task.graph.GraphGrpc.GetAllGraphsRequest;
 import ru.leti.wise.task.graph.GraphGrpc.GetAllGraphsResponse;

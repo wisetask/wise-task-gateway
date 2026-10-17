@@ -1,7 +1,7 @@
 package ru.leti.wise.task.gateway.controller.support;
 
 import io.grpc.Status;
-import ru.leti.wise.task.gateway.service.grpc.task.TaskGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.TaskGrpcService;
 import ru.leti.wise.task.task.TaskGrpc.GetAllTaskRequest;
 import ru.leti.wise.task.task.TaskGrpc.GetAllTaskResponse;
 import ru.leti.wise.task.task.TaskGrpc.GetAllTaskSolutionsRequest;

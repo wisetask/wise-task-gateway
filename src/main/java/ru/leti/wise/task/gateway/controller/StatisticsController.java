@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.mapper.StatisticMapper;
 import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
-import ru.leti.wise.task.gateway.service.grpc.statistic.StatisticsGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.StatisticsGrpcService;
 
 
 @Slf4j

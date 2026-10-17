@@ -8,10 +8,13 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.stereotype.Component;
+import ru.leti.graphql.types.Profile;
 import ru.leti.wise.task.gateway.configuration.OAuth2IssuerProperties;
 import ru.leti.wise.task.gateway.dto.UserCredentials;
 import ru.leti.wise.task.gateway.exception.JwtIssuerException;
-import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
+import ru.leti.wise.task.gateway.mapper.ProfileMapper;
+import ru.leti.wise.task.gateway.service.ProfileService;
+import ru.leti.wise.task.gateway.service.grpc.ProfileGrpcService;
 import ru.leti.wise.task.profile.ProfileOuterClass;
 
 import java.util.List;
@@ -20,8 +23,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GoogleJwtConverterDecoder implements JwtConverterDecoder {
 
-    private final ProfileGrpcService profileGrpcService;
+    private final ProfileService profileService;
     private final OAuth2IssuerProperties oAuth2Properties;
+    private final ProfileGrpcService profileGrpcService;
+    private final ProfileMapper profileMapper;
 
     @Override
     public boolean match(String issuer) {
@@ -39,9 +44,9 @@ public class GoogleJwtConverterDecoder implements JwtConverterDecoder {
         if (issStr.equals(oAuth2Properties.googleIssuer())) {
             var email = jwt.getClaimAsString("email");
 
-            ProfileOuterClass.Profile profile;
+            Profile profile;
             try {
-                profile = profileGrpcService.getProfileByEmail(email);
+                profile = profileService.getProfileByEmail(email);
             } catch (StatusRuntimeException e) {
                 if (!e.getStatus().getCode().equals(Status.NOT_FOUND.getCode())) {
                     throw e;
@@ -60,7 +65,7 @@ public class GoogleJwtConverterDecoder implements JwtConverterDecoder {
         return JwtDecoders.fromIssuerLocation(oAuth2Properties.googleIssuer());
     }
 
-    public ProfileOuterClass.Profile signUpProfile(Jwt jwt) {
+    public Profile signUpProfile(Jwt jwt) {
         var email = jwt.getClaimAsString("email");
         var firstName = jwt.getClaimAsString("given_name");
         var lastName = jwt.getClaimAsString("family_name");
@@ -74,6 +79,7 @@ public class GoogleJwtConverterDecoder implements JwtConverterDecoder {
         builder.setFirstName(firstName);
         builder.setLastName(lastName);
         builder.setProfileRole(ProfileOuterClass.Role.USER);
-        return profileGrpcService.signUp(builder.build(), true);
+        var grpcResponse = profileGrpcService.signUp(builder.build(), true);
+        return profileMapper.toProfile(grpcResponse);
     }
 }

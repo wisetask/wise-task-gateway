@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.mapper.PaginationMapper;
 import ru.leti.wise.task.gateway.mapper.PluginMapper;
-import ru.leti.wise.task.gateway.service.grpc.plugin.PluginGrpcService;
-import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.PluginGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.ProfileGrpcService;
 import ru.leti.wise.task.plugin.PluginOuterClass;
 import ru.leti.wise.task.profile.ProfileOuterClass;
 

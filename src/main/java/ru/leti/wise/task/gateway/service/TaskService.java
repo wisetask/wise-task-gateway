@@ -1,7 +1,6 @@
 package ru.leti.wise.task.gateway.service;
 
 import io.grpc.StatusRuntimeException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,9 +10,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.mapper.*;
-import ru.leti.wise.task.gateway.service.grpc.plugin.PluginGrpcService;
-import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
-import ru.leti.wise.task.gateway.service.grpc.task.TaskGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.PluginGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.ProfileGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.TaskGrpcService;
 import ru.leti.wise.task.plugin.PluginOuterClass;
 import ru.leti.wise.task.profile.ProfileOuterClass;
 import ru.leti.wise.task.task.TaskOuterClass;

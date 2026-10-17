@@ -1,7 +1,7 @@
 package ru.leti.wise.task.gateway.controller.support;
 
 import io.grpc.Status;
-import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.ProfileGrpcService;
 import ru.leti.wise.task.profile.ProfileGrpc.GetAllProfilesRequest;
 import ru.leti.wise.task.profile.ProfileGrpc.GetAllProfilesResponse;
 import ru.leti.wise.task.profile.ProfileOuterClass.Profile;

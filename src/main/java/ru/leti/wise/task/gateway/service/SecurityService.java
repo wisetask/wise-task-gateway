@@ -11,10 +11,9 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import ru.leti.wise.task.gateway.configuration.JwtProperties;
 import ru.leti.graphql.types.*;
-import ru.leti.wise.task.gateway.configuration.security.MultitenancyAuthenticationResolver;
 import ru.leti.wise.task.gateway.exception.InvalidRefreshTokenException;
 import ru.leti.wise.task.gateway.mapper.ProfileMapper;
-import ru.leti.wise.task.gateway.service.grpc.profile.ProfileGrpcService;
+import ru.leti.wise.task.gateway.service.grpc.ProfileGrpcService;
 import ru.leti.wise.task.gateway.utils.SecurityUtils;
 import ru.leti.wise.task.profile.ProfileOuterClass;
 
