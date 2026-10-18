@@ -132,7 +132,7 @@ type TaskGraph implements Task {
     isHiddenMistake: Boolean!
     graph: Graph
     rule: Rule!
-    condition: [PluginInfo]!
+    conditions: [PluginInfo!]
 }
 
 type TaskImplementation implements Task {
@@ -160,7 +160,7 @@ type SolutionGraph implements Solution {
     author: Profile
     isCorrect: Boolean!
     graph: Graph!
-    pluginResults: [PluginResult]!
+    pluginResults: [PluginResult!]
 }
 
 type SolutionImplementation implements Solution {
@@ -168,7 +168,7 @@ type SolutionImplementation implements Solution {
     task: Task
     author: Profile
     isCorrect: Boolean!
-    implementationResult: [GraphResult]!
+    implementationResult: [GraphResult!]
 }
 
 type PluginResult {

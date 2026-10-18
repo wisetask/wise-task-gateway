@@ -3,6 +3,8 @@ package ru.leti.wise.task.gateway.service.grpc;
 import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import ru.leti.wise.task.graph.GraphGrpc;
 import ru.leti.wise.task.graph.GraphGrpc.GetAllGraphsRequest;
@@ -21,6 +23,8 @@ public class GraphGrpcService {
 
     private final GraphServiceBlockingStub graphService;
 
+
+    @Cacheable(value = "graph-grpc", key = "#id", cacheManager = "localCacheManager")
     public GraphOuterClass.Graph getGraphById(String id) {
         log.debug("GraphService.getGraphById request, graph id {}", id);
         var request = GraphGrpc.GetGraphByIdRequest.newBuilder()
@@ -50,7 +54,12 @@ public class GraphGrpcService {
         return response;
     }
 
-    public String deleteGraph(String id) {
+    @CacheEvict(
+            value = "graph-grpc",
+            key = "#id",
+            cacheManager = "localCacheManager"
+    )
+    public void deleteGraph(String id) {
         log.debug("GraphService.deleteGraph request, graph id {}", id);
         var request = GraphGrpc.RemoveGraphRequest.newBuilder()
                 .setId(id)
@@ -58,7 +67,6 @@ public class GraphGrpcService {
 
         var deletedId = graphService.removeGraph(request).getId();
         log.debug("GraphService.deleteGraph request, deleted graph {}", deletedId);
-        return deletedId;
     }
 
     public GraphOuterClass.Graph createGraph(GraphOuterClass.Graph graph) {

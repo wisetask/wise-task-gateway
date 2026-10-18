@@ -1,21 +1,16 @@
 package ru.leti.wise.task.gateway.service;
 
-import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.mapper.GraphMapper;
 import ru.leti.wise.task.gateway.mapper.PaginationMapper;
 import ru.leti.wise.task.gateway.service.grpc.GraphGrpcService;
-import ru.leti.wise.task.gateway.service.grpc.ProfileGrpcService;
 import ru.leti.wise.task.graph.GraphOuterClass;
-import ru.leti.wise.task.profile.ProfileOuterClass;
 
 import java.util.List;
 import java.util.Map;
@@ -26,12 +21,9 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class GraphService {
-
     private final GraphMapper graphMapper;
     private final GraphGrpcService graphGrpcService;
-    private final ProfileGrpcService profileGrpcService;
     private final PaginationMapper paginationMapper;
-    @Lazy @Autowired private GraphService self;
 
     public GetAllGraphsResponse getAllGraphsResponse(GetAllGraphsRequestInput request) {
         log.debug("getAllGraphs request, {}", request);
@@ -43,29 +35,13 @@ public class GraphService {
         return GetAllGraphsResponse.newBuilder().items(items).pagination(pagination).build();
     }
 
+    @Cacheable(value = "graph", key = "#id", cacheManager = "localCacheManager")
     public Graph getGraphById(String id) {
         log.debug("getGraphById request, {}", id);
-        var graph = self.toGraph(graphGrpcService.getGraphById(id));
+        var graphGrpc = graphGrpcService.getGraphById(id);
+        var graph = toGraph(graphGrpc);
         log.info("getGraphById request, mapped graph {}", id);
         return graph;
-    }
-
-    public Map<String, Graph> getGraphsByIds(List<String> graphIds) {
-        var ids = graphIds.stream().filter(id -> id != null && !id.isBlank()).distinct().toList();
-        if (ids.isEmpty()) {
-            return Map.of();
-        }
-
-        log.debug("getGraphsByIds request, fetching graphs {}", ids);
-        var graphs = graphGrpcService.getGraphsByIds(ids);
-        var profiles = getProfilesByIds(graphs.stream().map(GraphOuterClass.Graph::getAuthorId).toList());
-        log.debug("getGraphsByIds request, fetching authors for {} graphs", graphs.size());
-
-        return graphs.stream()
-                .collect(Collectors.toMap(
-                        GraphOuterClass.Graph::getId,
-                        graph -> graphMapper.toGraph(graph, profiles.get(graph.getAuthorId()))
-                ));
     }
 
     @CachePut(value = "graph", key = "#result.id", cacheManager = "localCacheManager")
@@ -99,47 +75,22 @@ public class GraphService {
         return graphGrpcService.getGraphById(graphId).getAuthorId().equals(userId);
     }
 
-    @Cacheable(value = "graph", key = "#grpcGraph.id", cacheManager = "localCacheManager")
     public Graph toGraph(GraphOuterClass.Graph grpcGraph) {
-        log.debug("toGraph mapping, mapping graph {} with author", grpcGraph.getId());
-        return graphMapper.toGraph(grpcGraph, getGrpcProfile(grpcGraph.getAuthorId()));
+        log.debug("toGraph mapping, mapping graph {}", grpcGraph.getId());
+        return graphMapper.toGraph(grpcGraph);
     }
 
     private List<Graph> toGraphs(List<GraphOuterClass.Graph> grpcGraphs) {
-        var profiles = getProfilesByIds(grpcGraphs.stream().map(GraphOuterClass.Graph::getAuthorId).toList());
-        log.debug("getAllGraphs request, mapping {} graphs with authors", grpcGraphs.size());
-
+        log.debug("getAllGraphs request, mapping {} graphs", grpcGraphs.size());
         return grpcGraphs.stream()
-                .map(grpcGraph -> graphMapper.toGraph(grpcGraph, profiles.get(grpcGraph.getAuthorId())))
+                .map(this::toGraph)
                 .toList();
     }
 
-    private ProfileOuterClass.Profile getGrpcProfile(String profileId) {
-        log.debug("mapping, fetching profile {}", profileId);
-        try {
-            return profileGrpcService.getProfile(profileId);
-        } catch (StatusRuntimeException e) {
-            log.warn("mapping, failed to fetch profile {}, returning null profile", profileId, e);
-            return null;
-        }
-    }
-
-    private Map<String, ProfileOuterClass.Profile> getProfilesByIds(List<String> profileIds) {
-        var ids = profileIds.stream().filter(id -> id != null && !id.isBlank()).distinct().toList();
-        if (ids.isEmpty()) {
-            return Map.of();
-        }
-
-        log.debug("mapping, fetching profiles {}", ids);
-        try {
-            return profileGrpcService.getProfilesByIds(ids).stream()
-                    .collect(Collectors.toMap(
-                            ProfileOuterClass.Profile::getId,
-                            profile -> profile
-                    ));
-        } catch (StatusRuntimeException e) {
-            log.warn("mapping, failed to fetch profiles {}, returning empty map", ids, e);
-            return Map.of();
-        }
+    public Map<String, Graph> getGraphsByIds(List<String> graphIds) {
+        log.debug("getGraphsById request, fetching {} graphs", graphIds.size());
+        return graphGrpcService.getGraphsByIds(graphIds).stream()
+                .map(this::toGraph)
+                .collect(Collectors.toMap(Graph::getId, graph -> graph));
     }
 }

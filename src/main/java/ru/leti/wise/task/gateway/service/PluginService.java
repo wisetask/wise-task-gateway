@@ -3,24 +3,18 @@ package ru.leti.wise.task.gateway.service;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.leti.graphql.types.*;
 import ru.leti.wise.task.gateway.mapper.PaginationMapper;
 import ru.leti.wise.task.gateway.mapper.PluginMapper;
 import ru.leti.wise.task.gateway.service.grpc.PluginGrpcService;
-import ru.leti.wise.task.gateway.service.grpc.ProfileGrpcService;
 import ru.leti.wise.task.plugin.PluginOuterClass;
-import ru.leti.wise.task.profile.ProfileOuterClass;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
 
 @Slf4j
 @Component
@@ -29,10 +23,8 @@ public class PluginService {
 
     private final PluginMapper pluginMapper;
     private final PluginGrpcService pluginGrpcService;
-    private final ProfileGrpcService profileGrpcService;
     private final GraphService graphService;
     private final PaginationMapper paginationMapper;
-    @Lazy @Autowired private PluginService self;
 
     public GetAllPluginsResponse getAllPluginsResponse(GetAllPluginRequestInput request) {
         log.debug("getAllPlugins request, {}", request);
@@ -44,9 +36,10 @@ public class PluginService {
         return GetAllPluginsResponse.newBuilder().items(items).pagination(pagination).build();
     }
 
+    @Cacheable(value = "plugin", key = "#id", cacheManager = "localCacheManager")
     public Plugin getPlugin(String id) {
         log.debug("getPlugin request, {}", id);
-        var plugin = self.toPlugin(pluginGrpcService.getPlugin(id));
+        var plugin = toPlugin(pluginGrpcService.getPlugin(id));
         log.info("getPlugin request, mapped plugin {}", id);
         return plugin;
     }
@@ -59,7 +52,7 @@ public class PluginService {
     @CachePut(value = "plugin", key = "#result.id", cacheManager = "localCacheManager")
     public Plugin createPlugin(PluginInput plugin, String authorId) {
         log.debug("createPlugin request, {}", plugin);
-        var created = self.toPlugin(pluginGrpcService.createPlugin(pluginMapper.toPlugin(plugin, authorId)));
+        var created = toPlugin(pluginGrpcService.createPlugin(pluginMapper.toPlugin(plugin, authorId)));
         log.info("createPlugin request, created plugin {}", created.getId());
         return created;
     }
@@ -67,7 +60,7 @@ public class PluginService {
     @CachePut(value = "plugin", key = "#plugin.id", cacheManager = "localCacheManager")
     public Plugin updatePlugin(PluginInput plugin, String authorId) {
         log.debug("updatePlugin request, {}", plugin);
-        var updated = self.toPlugin(pluginGrpcService.updatePlugin(pluginMapper.toPlugin(plugin, authorId)));
+        var updated = toPlugin(pluginGrpcService.updatePlugin(pluginMapper.toPlugin(plugin, authorId)));
         log.info("updatePlugin request, updated plugin {}", updated.getId());
         return updated;
     }
@@ -100,7 +93,6 @@ public class PluginService {
         var result = pluginMapper.toImplementationResult(grpcResult);
         result.setGraphTestResults(toGraphTestResults(grpcResult.getGraphTestResultsList()));
         log.info("checkPluginImplementation request, checked plugin implementation {}", id);
-
         return result;
     }
 
@@ -112,7 +104,6 @@ public class PluginService {
         return graphTestResults.stream().map(graphTestResult -> {
             var mapped = pluginMapper.toGraphTestResult(graphTestResult);
             mapped.setGraph(graphs.get(graphTestResult.getGraphId()));
-
             return mapped;
         }).toList();
     }
@@ -126,47 +117,15 @@ public class PluginService {
         }
     }
 
-    @Cacheable(value = "plugin", key = "#grpcPlugin.id", cacheManager = "localCacheManager")
     public Plugin toPlugin(PluginOuterClass.Plugin grpcPlugin) {
         log.debug("toPlugin mapping, mapping plugin {} with author", grpcPlugin.getId());
-        return pluginMapper.toPlugin(grpcPlugin, getGrpcProfile(grpcPlugin.getAuthorId()));
+        return pluginMapper.toPlugin(grpcPlugin);
     }
 
     private List<Plugin> toPlugins(List<PluginOuterClass.Plugin> grpcPlugins) {
-        var profiles = getProfilesByIds(grpcPlugins.stream().map(PluginOuterClass.Plugin::getAuthorId).toList());
         log.debug("getAllPlugins request, mapping {} plugins with authors", grpcPlugins.size());
-
         return grpcPlugins.stream()
-                .map(grpcPlugin -> pluginMapper.toPlugin(grpcPlugin, profiles.get(grpcPlugin.getAuthorId())))
+                .map(pluginMapper::toPlugin)
                 .toList();
-    }
-
-    private ProfileOuterClass.Profile getGrpcProfile(String profileId) {
-        log.debug("mapping, fetching profile {}", profileId);
-        try {
-            return profileGrpcService.getProfile(profileId);
-        } catch (StatusRuntimeException e) {
-            log.warn("mapping, failed to fetch profile {}, returning null profile", profileId, e);
-            return null;
-        }
-    }
-
-    private Map<String, ProfileOuterClass.Profile> getProfilesByIds(List<String> profileIds) {
-        var ids = profileIds.stream().filter(id -> id != null && !id.isBlank()).distinct().toList();
-        if (ids.isEmpty()) {
-            return Map.of();
-        }
-
-        log.debug("mapping, fetching profiles {}", ids);
-        try {
-            return profileGrpcService.getProfilesByIds(ids).stream()
-                    .collect(Collectors.toMap(
-                            ProfileOuterClass.Profile::getId,
-                            profile -> profile
-                    ));
-        } catch (StatusRuntimeException e) {
-            log.warn("mapping, failed to fetch profiles {}, returning empty map", ids, e);
-            return Map.of();
-        }
     }
 }

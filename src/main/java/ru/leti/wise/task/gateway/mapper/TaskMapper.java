@@ -23,11 +23,11 @@ public interface TaskMapper {
     TaskOuterClass.TaskGraph toGrpcTaskGraph(TaskGraphInput taskGraph, @Context String authorId);
 
     @Named("toTask")
-    default Task toTask(TaskOuterClass.Task task, ProfileOuterClass.Profile profile) {
+    default Task toTask(TaskOuterClass.Task task) {
         if (task.hasTaskGraph()) {
-            return toTaskGraph(task, profile);
+            return toTaskGraph(task);
         } else {
-            return toTaskImplementation(task, profile);
+            return toTaskImplementation(task);
         }
     }
 
@@ -45,13 +45,13 @@ public interface TaskMapper {
 
     @Mapping(target = ".", source = "task.taskGraph")
     @Mapping(target = "id", source = "task.id")
-    @Mapping(target = "author", source = "profile")
-    TaskGraph toTaskGraph(TaskOuterClass.Task task, ProfileOuterClass.Profile profile);
+    @Mapping(target = "author", ignore = true)
+    TaskGraph toTaskGraph(TaskOuterClass.Task task);
 
     @Mapping(target = ".", source = "task.taskImplementation")
     @Mapping(target = "id", source = "task.id")
-    @Mapping(target = "author", source = "profile")
-    TaskImplementation toTaskImplementation(TaskOuterClass.Task task, ProfileOuterClass.Profile profile);
+    @Mapping(target = "author", ignore = true)
+    TaskImplementation toTaskImplementation(TaskOuterClass.Task task);
 
     @Mapping(target = "plugin", ignore = true)
     PluginInfo toPluginInfo(TaskOuterClass.PluginInfo pluginInfo);

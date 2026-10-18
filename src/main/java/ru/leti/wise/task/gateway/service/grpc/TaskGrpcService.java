@@ -3,6 +3,9 @@ package ru.leti.wise.task.gateway.service.grpc;
 import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import ru.leti.wise.task.task.TaskGrpc;
 import ru.leti.wise.task.task.TaskGrpc.GetAllTaskRequest;
@@ -23,6 +26,7 @@ public class TaskGrpcService {
 
     private final TaskServiceBlockingStub taskService;
 
+    @Cacheable(value = "task-grpc", key = "#id", cacheManager = "localCacheManager")
     public Task getTask(String id) {
         log.debug("TaskService.getTask request, task id {}", id);
         var request = TaskGrpc.GetTaskRequest.newBuilder()
@@ -51,6 +55,12 @@ public class TaskGrpcService {
         return response;
     }
 
+
+    @CacheEvict(
+            value = "task-grpc",
+            key = "#id",
+            cacheManager = "localCacheManager"
+    )
     public void deleteTask(String id) {
         log.debug("TaskService.deleteTask request, task id {}", id);
         var request = TaskGrpc.DeleteTaskRequest.newBuilder()
@@ -71,6 +81,11 @@ public class TaskGrpcService {
         return created;
     }
 
+    @CachePut(
+            value = "task-grpc",
+            key = "#task.id",
+            cacheManager = "localCacheManager"
+    )
     public Task updateTask(Task task) {
         log.debug("TaskService.updateTask request, task id {}", task.getId());
         var request = TaskGrpc.UpdateTaskRequest.newBuilder()
@@ -93,6 +108,7 @@ public class TaskGrpcService {
         return solution;
     }
 
+    @Cacheable(value = "solution-grpc", key = "#id", cacheManager = "localCacheManager")
     public TaskOuterClass.Solution getTaskSolution(String id) {
         log.debug("TaskService.getTaskSolution request, solution id {}", id);
         var request = TaskGrpc.GetTaskSolutionRequest.newBuilder()

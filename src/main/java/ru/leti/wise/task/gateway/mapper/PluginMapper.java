@@ -16,8 +16,8 @@ public interface PluginMapper {
     PluginGrpc.GetAllPluginRequest toGetAllRequest(GetAllPluginRequestInput request);
 
     @Mapping(target = "id", source = "plugin.id")
-    @Mapping(target = "author", source = "profile")
-    Plugin toPlugin(PluginOuterClass.Plugin plugin, ProfileOuterClass.Profile profile);
+    @Mapping(target = "author", ignore = true)
+    Plugin toPlugin(PluginOuterClass.Plugin plugin);
 
     @Mapping(target = "authorId", expression = "java(authorId)")
     PluginOuterClass.Plugin toPlugin(PluginInput plugin, @Context String authorId);

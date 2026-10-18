@@ -11,29 +11,13 @@ public interface SolutionMapper {
 
     TaskGrpc.GetAllTaskSolutionsRequest toGetAllRequest(GetAllTaskSolutionsRequestInput request);
 
-    default Solution toSolution(TaskOuterClass.Solution solution, Task task, Profile author) {
+    default Solution toSolution(TaskOuterClass.Solution solution) {
         if (solution.hasSolutionGraph()) {
-            return toSolutionGraph(solution, task, author);
+            return toSolutionGraph(solution);
         } else if (solution.hasSolutionImplementation()) {
-            return toSolutionImplementation(solution, task, author);
+            return toSolutionImplementation(solution);
         }
         throw new IllegalArgumentException("Решение должно содержать граф или реализацию");
-    }
-
-    default SolutionGraph toSolutionGraph(TaskOuterClass.Solution solution, Task task, Profile author) {
-        var solutionGraph = toSolutionGraph(solution);
-        solutionGraph.setTask(task);
-        solutionGraph.setAuthor(author);
-
-        return solutionGraph;
-    }
-
-    default SolutionImplementation toSolutionImplementation(TaskOuterClass.Solution solution, Task task, Profile author) {
-        var solutionImplementation = toSolutionImplementation(solution);
-        solutionImplementation.setTask(task);
-        solutionImplementation.setAuthor(author);
-
-        return solutionImplementation;
     }
 
     @Mapping(target = "solutionImplementation", ignore = true)

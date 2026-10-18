@@ -3,6 +3,9 @@ package ru.leti.wise.task.gateway.service.grpc;
 import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import ru.leti.wise.task.plugin.PluginGrpc;
 import ru.leti.wise.task.plugin.PluginGrpc.GetAllPluginRequest;
@@ -21,6 +24,7 @@ public class PluginGrpcService {
 
     private final PluginServiceBlockingStub pluginService;
 
+    @Cacheable(value = "plugin-grpc", key = "#id", cacheManager = "localCacheManager")
     public PluginOuterClass.Plugin getPlugin(String id) {
         log.debug("PluginService.getPlugin request, plugin id {}", id);
         var request = PluginGrpc.GetPluginRequest.newBuilder()
@@ -39,6 +43,11 @@ public class PluginGrpcService {
         return response;
     }
 
+    @CacheEvict(
+            value = "plugin-grpc",
+            key = "#id",
+            cacheManager = "localCacheManager"
+    )
     public String deletePlugin(String id) {
         log.debug("PluginService.deletePlugin request, plugin id {}", id);
         var request = PluginGrpc.DeletePluginRequest.newBuilder()
@@ -49,6 +58,7 @@ public class PluginGrpcService {
         log.debug("PluginService.deletePlugin request, deleted plugin {}", deletedId);
         return deletedId;
     }
+
 
     public PluginOuterClass.Plugin createPlugin(PluginOuterClass.Plugin plugin) {
         log.debug("PluginService.createPlugin request, plugin id {}", plugin.getId());
@@ -61,6 +71,11 @@ public class PluginGrpcService {
         return created;
     }
 
+    @CachePut(
+            value = "plugin-grpc",
+            key = "#plugin.id",
+            cacheManager = "localCacheManager"
+    )
     public PluginOuterClass.Plugin updatePlugin(PluginOuterClass.Plugin plugin) {
         log.debug("PluginService.updatePlugin request, plugin id {}", plugin.getId());
         var request = PluginGrpc.UpdatePluginRequest.newBuilder()
