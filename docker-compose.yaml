@@ -119,7 +119,7 @@ services:
     restart: always
 
   wise-task-db:
-    image: kgrozdanovski/pgvector:17.10-alpine
+    image: pgvector/pgvector:0.8.6-pg17-trixie
     container_name: wise-task-db
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}

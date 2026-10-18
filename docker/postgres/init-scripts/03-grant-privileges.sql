@@ -75,3 +75,31 @@ END LOOP;
 END $$;
 
 GRANT USAGE, CREATE ON SCHEMA public TO wise_task_task;
+
+\c wise_task_search;
+DO $$
+DECLARE r record;
+BEGIN
+FOR r IN
+SELECT sequencename FROM pg_sequences
+WHERE schemaname = 'public' AND sequenceowner = 'wise_task'
+    LOOP
+        EXECUTE format('ALTER SEQUENCE public.%I OWNER TO wise_task_search', r.sequencename);
+END LOOP;
+END $$;
+
+GRANT USAGE, CREATE ON SCHEMA public TO wise_task_search;
+
+\c wise_task_ai;
+DO $$
+DECLARE r record;
+BEGIN
+FOR r IN
+SELECT sequencename FROM pg_sequences
+WHERE schemaname = 'public' AND sequenceowner = 'wise_task'
+    LOOP
+        EXECUTE format('ALTER SEQUENCE public.%I OWNER TO wise_task_ai', r.sequencename);
+END LOOP;
+END $$;
+
+GRANT USAGE, CREATE ON SCHEMA public TO wise_task_ai;
