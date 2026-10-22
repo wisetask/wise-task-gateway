@@ -22,6 +22,7 @@ public interface SolutionMapper {
 
     @Mapping(target = "solutionImplementation", ignore = true)
     @Mapping(target = "authorId", expression = "java(authorId)")
+    @Mapping(target = "solutionGraph.graph", source = "solution.graph")
     @Mapping(target = "isCorrect", ignore = true)
     TaskOuterClass.Solution toSolutionGraph(SolutionGraphInput solution, @Context String authorId);
 

@@ -47,7 +47,8 @@ public class GraphService {
     @CachePut(value = "graph", key = "#result.id", cacheManager = "localCacheManager")
     public Graph createGraph(GraphInput graph, String authorId) {
         log.debug("createGraph request, {}", graph);
-        var created = toGraph(graphGrpcService.createGraph(graphMapper.toGraph(graph, authorId)));
+        var graphGrpc = graphGrpcService.createGraph(graphMapper.toGraph(graph, authorId));
+        var created = toGraph(graphGrpc);
         log.info("createGraph request, created graph {}", created.getId());
         return created;
     }
