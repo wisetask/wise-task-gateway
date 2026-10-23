@@ -58,9 +58,8 @@ public class FakeGraphGrpcService extends GraphGrpcService {
     }
 
     @Override
-    public String deleteGraph(String id) {
+    public void deleteGraph(String id) {
         graphs.remove(id);
-        return id;
     }
 
     @Override

@@ -16,12 +16,21 @@ class GraphControllerTest extends AbstractControllerTest {
         return controller(GraphController.class);
     }
 
+    /**
+     * Поле author в рантайме наполняет {@link ru.leti.wise.task.gateway.controller.GraphSchemaMapper}
+     * (вызывается Spring GraphQL); в тесте повторяем это явно.
+     */
+    private void resolveAuthor(Graph graph) {
+        graph.setAuthor(controller(ru.leti.wise.task.gateway.controller.GraphSchemaMapper.class).getGraph(graph));
+    }
+
     @Test
     void getGraphById_mapsGraphWithAuthor() {
         graphGrpcService.putGraph(TestData.graph("graph-1", "author-1"));
         profileGrpcService.putProfile(TestData.profile("author-1", "author@example.com"));
 
         Graph graph = controller().getGraphById("graph-1");
+        resolveAuthor(graph);
 
         assertThat(graph.getId()).isEqualTo("graph-1");
         assertThat(graph.getName()).isEqualTo("graph graph-1");
@@ -64,6 +73,7 @@ class GraphControllerTest extends AbstractControllerTest {
         profileGrpcService.putProfile(TestData.profile("author-1", "author1@example.com"));
 
         var response = controller().getAllGraphs(GetAllGraphsRequestInput.newBuilder().build());
+        response.getItems().forEach(this::resolveAuthor);
 
         assertThat(response.getItems()).hasSize(2);
         assertThat(response.getPagination().getTotalCount()).isEqualTo(1L);
@@ -77,6 +87,7 @@ class GraphControllerTest extends AbstractControllerTest {
         profileGrpcService.putProfile(TestData.profile(CURRENT_USER_ID, "current@example.com"));
 
         Graph created = controller().createGraph(TestData.graphInput("graph-new"));
+        resolveAuthor(created);
 
         assertThat(created.getId()).isEqualTo("graph-new");
         assertThat(created.getName()).isEqualTo("graph input graph-new");
@@ -99,6 +110,7 @@ class GraphControllerTest extends AbstractControllerTest {
         request.setIsSaved(true);
 
         Graph generated = controller().generateGraph(request);
+        resolveAuthor(generated);
 
         assertThat(generated.getId()).isEqualTo("graph-gen");
         assertThat(generated.getAuthor().getId()).isEqualTo("author-1");

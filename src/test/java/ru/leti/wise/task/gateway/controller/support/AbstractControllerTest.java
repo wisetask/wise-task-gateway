@@ -15,6 +15,7 @@ import ru.leti.wise.task.gateway.controller.GraphController;
 import ru.leti.wise.task.gateway.controller.PluginController;
 import ru.leti.wise.task.gateway.controller.ProfileController;
 import ru.leti.wise.task.gateway.controller.StatisticsController;
+import ru.leti.wise.task.gateway.controller.SolutionController;
 import ru.leti.wise.task.gateway.controller.TaskController;
 import ru.leti.wise.task.gateway.dto.UserCredentials;
 import ru.leti.wise.task.gateway.mapper.GraphMapperImpl;
@@ -27,7 +28,9 @@ import ru.leti.wise.task.gateway.mapper.TaskMapperImpl;
 import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
 import ru.leti.wise.task.gateway.service.GraphService;
 import ru.leti.wise.task.gateway.service.PluginService;
+import ru.leti.wise.task.gateway.service.ProfileService;
 import ru.leti.wise.task.gateway.service.SecurityService;
+import ru.leti.wise.task.gateway.service.SolutionService;
 import ru.leti.wise.task.gateway.service.TaskService;
 import ru.leti.wise.task.gateway.service.grpc.GraphGrpcService;
 import ru.leti.wise.task.gateway.service.grpc.PluginGrpcService;
@@ -78,12 +81,20 @@ public abstract class AbstractControllerTest {
                 TaskMapperImpl.class, SolutionMapperImpl.class, ProfileMapperImpl.class,
                 PluginMapperImpl.class, GraphMapperImpl.class, PaginationMapperImpl.class, StatisticMapperImpl.class
         );
-        context.register(TaskService.class, GraphService.class, PluginService.class, SecurityService.class);
+        context.register(TaskService.class, GraphService.class, PluginService.class, SecurityService.class,
+                ProfileService.class, SolutionService.class);
         context.register(
                 TaskController.class, GraphController.class, PluginController.class,
-                ProfileController.class, StatisticsController.class, AuthController.class
+                ProfileController.class, StatisticsController.class, AuthController.class, SolutionController.class
         );
         context.register(GraphQlMetrics.class);
+        // Spring GraphQL вызывает эти резолверы сам; в тестах их зовём явно
+        context.register(
+                ru.leti.wise.task.gateway.controller.GraphSchemaMapper.class,
+                ru.leti.wise.task.gateway.controller.PluginSchemaMapper.class,
+                ru.leti.wise.task.gateway.controller.TaskSchemaMapper.class,
+                ru.leti.wise.task.gateway.controller.SolutionSchemaMapper.class
+        );
         context.registerBean(TaskGrpcService.class, () -> taskGrpcService);
         context.registerBean(ProfileGrpcService.class, () -> profileGrpcService);
         context.registerBean(PluginGrpcService.class, () -> pluginGrpcService);

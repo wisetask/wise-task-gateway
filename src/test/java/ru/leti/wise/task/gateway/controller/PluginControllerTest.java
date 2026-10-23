@@ -20,12 +20,21 @@ class PluginControllerTest extends AbstractControllerTest {
         return controller(PluginController.class);
     }
 
+    /**
+     * Поле author в рантайме наполняет {@link ru.leti.wise.task.gateway.controller.PluginSchemaMapper}
+     * (вызывается Spring GraphQL); в тесте повторяем это явно.
+     */
+    private void resolveAuthor(Plugin plugin) {
+        plugin.setAuthor(controller(ru.leti.wise.task.gateway.controller.PluginSchemaMapper.class).getProfile(plugin));
+    }
+
     @Test
     void getPlugin_mapsPluginWithAuthor() {
         pluginGrpcService.putPlugin(TestData.plugin("plugin-1", "author-1"));
         profileGrpcService.putProfile(TestData.profile("author-1", "author@example.com"));
 
         Plugin plugin = controller().getPlugin("plugin-1");
+        resolveAuthor(plugin);
 
         assertThat(plugin.getId()).isEqualTo("plugin-1");
         assertThat(plugin.getName()).isEqualTo("plugin plugin-1");
@@ -46,6 +55,7 @@ class PluginControllerTest extends AbstractControllerTest {
         profileGrpcService.failGetProfile();
 
         Plugin plugin = controller().getPlugin("plugin-1");
+        resolveAuthor(plugin);
 
         assertThat(plugin.getId()).isEqualTo("plugin-1");
         assertThat(plugin.getAuthor()).isNull();
@@ -58,6 +68,7 @@ class PluginControllerTest extends AbstractControllerTest {
         profileGrpcService.putProfile(TestData.profile("author-1", "author1@example.com"));
 
         var response = controller().getAllPlugins(GetAllPluginRequestInput.newBuilder().build());
+        response.getItems().forEach(this::resolveAuthor);
 
         assertThat(response.getItems()).hasSize(2);
         assertThat(response.getPagination().getTotalCount()).isEqualTo(1L);
@@ -81,6 +92,7 @@ class PluginControllerTest extends AbstractControllerTest {
         input.setIsInternal(false);
 
         Plugin created = controller().createPlugin(input);
+        resolveAuthor(created);
 
         assertThat(created.getId()).isEqualTo("plugin-new");
         assertThat(created.getName()).isEqualTo("new plugin");
