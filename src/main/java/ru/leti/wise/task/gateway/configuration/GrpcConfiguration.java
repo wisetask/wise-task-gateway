@@ -1,5 +1,7 @@
 package ru.leti.wise.task.gateway.configuration;
 
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.client.ImportGrpcClients;
 import ru.leti.wise.task.graph.GraphServiceGrpc;
@@ -8,6 +10,7 @@ import ru.leti.wise.task.profile.ProfileServiceGrpc;
 import ru.leti.wise.task.task.TaskServiceGrpc;
 import ru.leti.wise.task.event.StatisticsServiceGrpc;
 
+@Slf4j
 @Configuration
 @ImportGrpcClients(
         target = "${grpc.service.graph.host}:${grpc.service.graph.port}",
@@ -30,4 +33,9 @@ import ru.leti.wise.task.event.StatisticsServiceGrpc;
         types = StatisticsServiceGrpc.StatisticsServiceBlockingStub.class
 )
 public class GrpcConfiguration {
+
+    @PostConstruct
+    void logGrpcClients() {
+        log.debug("grpc configuration, initialized gRPC clients for graph, plugin, profile, task and statistics services");
+    }
 }

@@ -32,9 +32,11 @@ dependencies {
     // data
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 
     // API
     implementation 'org.springframework.boot:spring-boot-starter-graphql'
+    implementation 'com.graphql-java:graphql-java-extended-scalars'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-grpc-client'
 
@@ -51,6 +53,9 @@ dependencies {
     // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.46'
     annotationProcessor 'org.projectlombok:lombok:1.18.46'
+
+    // Tests
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 protobuf {
