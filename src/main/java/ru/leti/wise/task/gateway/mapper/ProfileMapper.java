@@ -15,7 +15,28 @@ import java.util.List;
 public interface ProfileMapper {
 
 
-    ProfileFilter toProfileFilter(ProfileFilterInput filter);
+    default ProfileFilter toProfileFilter(ProfileFilterInput filter) {
+        if (filter == null) {
+            return null;
+        }
+        var builder = ProfileFilter.newBuilder();
+        if (filter.getEmail() != null) {
+            builder.setEmail(filter.getEmail());
+        }
+        if (filter.getFirstName() != null) {
+            builder.setFirstName(filter.getFirstName());
+        }
+        if (filter.getLastName() != null) {
+            builder.setLastName(filter.getLastName());
+        }
+        if (filter.getPatronymic() != null) {
+            builder.setPatronymic(filter.getPatronymic());
+        }
+        if (filter.getProfileRole() != null) {
+            builder.addAllProfileRole(filter.getProfileRole());
+        }
+        return builder.build();
+    }
 
     ProfileGrpc.GetAllProfilesRequest toGetAllRequest(GetAllProfilesRequestInput request);
 

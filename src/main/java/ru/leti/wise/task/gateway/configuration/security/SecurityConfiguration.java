@@ -57,6 +57,7 @@ public class SecurityConfiguration {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request ->
                         request.requestMatchers("/graphql", "/graphiql/**").permitAll()
+                                .requestMatchers("/actuator/prometheus", "/actuator/health", "/actuator/health/**").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .anyRequest().authenticated()
                 )
