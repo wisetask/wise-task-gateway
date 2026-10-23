@@ -28,6 +28,13 @@ services:
       - MANAGEMENT_METRICS_ENABLE_PROCESS=false
     env_file:
       - .env
+    volumes:
+      # plugin service spawns runner containers via the host docker daemon
+      - /var/run/docker.sock:/var/run/docker.sock
+    # socket is root:docker 660 on the host, service runs as non-root user:
+    # add the host docker group gid so the socket is accessible
+    group_add:
+      - "${DOCKER_GID:?set DOCKER_GID in .env (stat -c %g /var/run/docker.sock)}"
 
   wise-task-profile:
     build:
