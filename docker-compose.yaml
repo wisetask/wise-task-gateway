@@ -78,21 +78,22 @@ services:
       - .env
     volumes:
       - ./src/main/resources/application.yaml:/app/config/application.yaml:ro
-#
-#  wise-task-event:
-#    build:
-#      context: ../wise-task-event
-#      dockerfile: Dockerfile
-#    container_name: wise-task-event
-#    depends_on:
-#      - wise-task-event-db
-#    ports:
-#      - "127.0.0.1:${EVENT_GRPC_PORT}:${EVENT_GRPC_PORT}"
-#      - "127.0.0.1:${EVENT_PORT}:${EVENT_PORT}"
-#    environment:
-#      - MANAGEMENT_METRICS_ENABLE_PROCESS=false
-#    env_file:
-#      - .env
+
+  wise-task-event:
+    build:
+      context: ../wise-task-event
+      dockerfile: Dockerfile
+    container_name: wise-task-event
+    depends_on:
+      - wise-task-event-db
+    ports:
+      - "127.0.0.1:${EVENT_GRPC_PORT}:${EVENT_GRPC_PORT}"
+      - "127.0.0.1:${EVENT_PORT}:${EVENT_PORT}"
+    environment:
+      - MANAGEMENT_METRICS_ENABLE_PROCESS=false
+      - SPRING_PROFILES_ACTIVE=prod
+    env_file:
+      - .env
 
   wise-task-event-db:
     image: timescale/timescaledb:2.26.0-pg16
