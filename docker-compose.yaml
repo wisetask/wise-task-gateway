@@ -91,7 +91,6 @@ services:
       - "127.0.0.1:${EVENT_PORT}:${EVENT_PORT}"
     environment:
       - MANAGEMENT_METRICS_ENABLE_PROCESS=false
-      - SPRING_PROFILES_ACTIVE=prod
     env_file:
       - .env
 
@@ -161,6 +160,9 @@ services:
     container_name: ${LOKI_HOST}
     ports:
       - "127.0.0.1:3100:3100"
+    volumes:
+      - ./docker/loki/local-config.yaml:/etc/local-config.yaml
+      - ./docker/loki/tempo-data:/tmp/loki
     environment:
       - JAEGER_AGENT_HOST=${TEMPO_HOST}
       - JAEGER_ENDPOINT=http://${TEMPO_HOST}:14268/api/traces
@@ -174,6 +176,8 @@ services:
     command:
       - --enable-feature=exemplar-storage
       - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+      - --storage.tsdb.retention.size=5GB
     depends_on:
       - loki
     volumes:
