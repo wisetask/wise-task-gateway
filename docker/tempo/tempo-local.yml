@@ -13,13 +13,12 @@ distributor:
         http:
           endpoint: 0.0.0.0:4318
 
-
 storage:
   trace:
     backend: local
     local:
       path: /tmp/tempo
 
-compactor:
+backend_worker:
   compaction:
     block_retention: 24h
