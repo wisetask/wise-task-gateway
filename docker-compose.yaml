@@ -28,6 +28,10 @@ services:
       - MANAGEMENT_METRICS_ENABLE_PROCESS=false
     env_file:
       - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - "${DOCKER_GID:?set DOCKER_GID in .env (stat -c %g /var/run/docker.sock)}"
 
   wise-task-profile:
     build:
@@ -69,33 +73,23 @@ services:
       - "127.0.0.1:${GATEWAY_PORT}:${GATEWAY_PORT}"
     env_file:
       - .env
+    volumes:
+      - ./src/main/resources/application.yaml:/app/config/application.yaml:ro
 
-  wise-task-search:
+  wise-task-event:
     build:
-      context: ../wise-task-search
+      context: ../wise-task-event
       dockerfile: Dockerfile
-    container_name: wise-task-search
+    container_name: wise-task-event
     depends_on:
-      - wise-task-db
+      - wise-task-event-db
     ports:
-      - "127.0.0.1:${SEARCH_PORT}:8000"
+      - "127.0.0.1:${EVENT_GRPC_PORT}:${EVENT_GRPC_PORT}"
+      - "127.0.0.1:${EVENT_PORT}:${EVENT_PORT}"
+    environment:
+      - MANAGEMENT_METRICS_ENABLE_PROCESS=false
     env_file:
       - .env
-
-#  wise-task-event:
-#    build:
-#      context: ../wise-task-event
-#      dockerfile: Dockerfile
-#    container_name: wise-task-event
-#    depends_on:
-#      - wise-task-event-db
-#    ports:
-#      - "127.0.0.1:${EVENT_GRPC_PORT}:${EVENT_GRPC_PORT}"
-#      - "127.0.0.1:${EVENT_PORT}:${EVENT_PORT}"
-#    environment:
-#      - MANAGEMENT_METRICS_ENABLE_PROCESS=false
-#    env_file:
-#      - .env
 
   wise-task-event-db:
     image: timescale/timescaledb:2.26.0-pg16
@@ -146,7 +140,7 @@ services:
       - wise-task-mongo:/data/db
 
   tempo:
-    image: grafana/tempo
+    image: grafana/tempo:3.1.1
     command: [ "-config.file=/etc/tempo.yaml" ]
     container_name: ${TEMPO_HOST}
     volumes:
@@ -158,11 +152,14 @@ services:
       - "127.0.0.1:14268:14268" # Jaeger ingest
 
   loki:
-    image: grafana/loki
+    image: grafana/loki:3.7.9
     command: [ "-config.file=/etc/loki/local-config.yaml" ]
     container_name: ${LOKI_HOST}
     ports:
       - "127.0.0.1:3100:3100"
+    volumes:
+      - ./docker/loki/local-config.yaml:/etc/local-config.yaml
+      - ./docker/loki/tempo-data:/tmp/loki
     environment:
       - JAEGER_AGENT_HOST=${TEMPO_HOST}
       - JAEGER_ENDPOINT=http://${TEMPO_HOST}:14268/api/traces
@@ -170,12 +167,14 @@ services:
       - JAEGER_SAMPLER_PARAM=1
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:v3.13.5
     extra_hosts: [ 'host.docker.internal:host-gateway' ]
     container_name: ${PROMETHEUS_HOST}
     command:
       - --enable-feature=exemplar-storage
       - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+      - --storage.tsdb.retention.size=5GB
     depends_on:
       - loki
     volumes:
@@ -184,7 +183,7 @@ services:
       - "127.0.0.1:9090:9090"
 
   smtp:
-    image: boky/postfix
+    image: boky/postfix:v5.1.0
     container_name: ${SMTP_HOST}
     restart: unless-stopped
     ports:
@@ -206,7 +205,7 @@ services:
     hostname: ${SMTP_HOST}
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:13.2.4
     volumes:
       - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
       - ./docker/grafana/dashboards:/etc/grafana/dashboards
@@ -229,13 +228,13 @@ services:
       - "127.0.0.1:3000:3000"
 
 volumes:
-  wise-task-mongo: {}
-  metadata_data: {}
-  middle_var: {}
-  historical_var: {}
-  broker_var: {}
-  coordinator_var: {}
-  router_var: {}
-  druid_shared: {}
-  wise-task-db: {}
-  wise-task-event-db: {}
+  wise-task-mongo: { }
+  metadata_data: { }
+  middle_var: { }
+  historical_var: { }
+  broker_var: { }
+  coordinator_var: { }
+  router_var: { }
+  druid_shared: { }
+  wise-task-db: { }
+  wise-task-event-db: { }

@@ -5,84 +5,93 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import ru.leti.graphql.types.ImplementationResult;
-import ru.leti.graphql.types.Plugin;
-import ru.leti.graphql.types.PluginInput;
-import ru.leti.graphql.types.SolutionInput;
-import ru.leti.wise.task.gateway.dto.UserCredentials;
-import ru.leti.wise.task.gateway.mapper.PluginMapper;
-import ru.leti.wise.task.gateway.service.grpc.plugin.PluginGrpcService;
 
-import java.util.List;
+import ru.leti.graphql.types.*;
+import ru.leti.wise.task.gateway.metrics.GraphQlMetrics;
+import ru.leti.wise.task.gateway.service.PluginService;
+import ru.leti.wise.task.gateway.utils.SecurityUtils;
 
 
 @Controller
 @RequiredArgsConstructor
 public class PluginController {
 
-    private final PluginGrpcService pluginGrpcService;
-    private final PluginMapper pluginMapper;
+    private final PluginService pluginService;
+    private final GraphQlMetrics metrics;
 
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\", \"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     @MutationMapping
     public ImplementationResult checkPluginImplementation(@Argument String id, @Argument String file) {
-        return pluginMapper.toImplementationResult(pluginGrpcService.checkPluginImplementation(id, file));
+        metrics.increment("checkPluginImplementation");
+        return pluginService.checkPluginImplementation(id, file);
     }
 
-    @PreAuthorize("hasAnyRole(\"USER\", \"AUTHOR\", \"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("USER", "AUTHOR", "ADMIN")
+            """)
     @MutationMapping
     public String checkPluginSolution(@Argument SolutionInput solution) {
-        return pluginGrpcService.checkPluginSolution(solution);
+        metrics.increment("checkPluginSolution");
+        return pluginService.checkPluginSolution(solution);
     }
 
-    @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("AUTHOR", "ADMIN")
+            """)
     @MutationMapping
-    public Plugin createPlugin(
-            @Argument PluginInput plugin,
-            @AuthenticationPrincipal UserCredentials user
-    ) {
-        return pluginMapper.toPlugin(pluginGrpcService.createPlugin(plugin, user.getId()));
+    public Plugin createPlugin(@Argument PluginInput plugin) {
+        metrics.increment("createPlugin");
+        return pluginService.createPlugin(plugin, SecurityUtils.getUserId());
     }
 
 
-    @PreAuthorize("(hasRole(\"AUTHOR\")" +
-            " and @pluginGrpcService.isOwnerPlugin(authentication.principal.id,#id))" +
-            " or hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            hasRole("AUTHOR") and @pluginService.isOwnerPlugin(authentication.principal.id, #id) or
+            hasRole("ADMIN")
+            """)
     @MutationMapping
     public String deletePlugin(@Argument String id) {
-        return pluginGrpcService.deletePlugin(id);
+        metrics.increment("deletePlugin");
+        return pluginService.deletePlugin(id);
     }
 
-    @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("AUTHOR", "ADMIN")
+            """)
     @QueryMapping
-    public List<Plugin> getAllPlugins() {
-        return pluginMapper.toResponsePlugins(pluginGrpcService.getAllPlugins());
+    public GetAllPluginsResponse getAllPlugins(@Argument GetAllPluginRequestInput request) {
+        metrics.increment("getAllPlugins");
+        return pluginService.getAllPluginsResponse(request);
     }
 
-    @PreAuthorize("hasAnyRole(\"AUTHOR\",\"ADMIN\")")
+    @PreAuthorize("""
+            hasAnyRole("AUTHOR", "ADMIN")
+            """)
     @QueryMapping
     public Plugin getPlugin(@Argument String id) {
-        return pluginMapper.toPlugin(pluginGrpcService.getPlugin(id));
+        metrics.increment("getPlugin");
+        return pluginService.getPlugin(id);
     }
 
-    @PreAuthorize(
-            "(hasRole(\"AUTHOR\") and @pluginGrpcService.isOwnerPlugin(authentication.principal.id,#plugin.getId()))" +
-                    " or hasRole(\"ADMIN\")"
-    )
+    @PreAuthorize("""
+            (hasRole("AUTHOR") and @pluginService.isOwnerPlugin(authentication.principal.id, #plugin.getId())) or
+            hasRole("ADMIN")
+            """)
     @MutationMapping
-    public Plugin updatePlugin(
-            @Argument PluginInput plugin,
-            @AuthenticationPrincipal UserCredentials user) {
-        return pluginMapper.toPlugin(pluginGrpcService.updatePlugin(plugin, user.getId()));
+    public Plugin updatePlugin(@Argument PluginInput plugin) {
+        metrics.increment("updatePlugin");
+        return pluginService.updatePlugin(plugin, SecurityUtils.getUserId());
     }
 
-    @PreAuthorize(
-            "(hasRole(\"AUTHOR\") and @pluginGrpcService.isOwnerPlugin(authentication.principal.id,#id))" +
-                    " or hasRole(\"ADMIN\")")
+    @PreAuthorize("""
+            hasRole("ADMIN")
+            """)
     @MutationMapping
     public String validatePlugin(@Argument String id) {
-        return pluginGrpcService.validatePlugin(id);
+        metrics.increment("validatePlugin");
+        return pluginService.validatePlugin(id);
     }
 }

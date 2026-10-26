@@ -4,22 +4,42 @@ package ru.leti.wise.task.task;
 
 import "task.proto";
 import "google/protobuf/empty.proto";
+import "pagination.proto";
 
 service TaskService {
   rpc GetTask(GetTaskRequest) returns (GetTaskResponse);
-  rpc GetAllTask(google.protobuf.Empty) returns (GetAllTaskResponse);
+  rpc GetAllTask(GetAllTaskRequest) returns (GetAllTaskResponse);
   rpc DeleteTask(DeleteTaskRequest) returns (google.protobuf.Empty);
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
   rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse);
   rpc SolveTask(SolveTaskRequest) returns (SolveTaskResponse);
   rpc GetTaskSolution(GetTaskSolutionRequest) returns (GetTaskSolutionResponse);
   rpc GetAllTaskSolutions(GetAllTaskSolutionsRequest) returns (GetAllTaskSolutionsResponse);
-  rpc GetUserSolutionStatistic(GetUserSolutionStatisticRequest) returns (GetUserSolutionStatisticResponse);
+  rpc GetTasksByIds(TaskIds) returns (GetTasksByIdsResponse);
   rpc CreateCatalog(CreateCatalogRequest) returns (CreateCatalogResponse);
   rpc DeleteCatalog(DeleteCatalogRequest) returns (google.protobuf.Empty);
   rpc UpdateCatalog(UpdateCatalogRequest) returns (UpdateCatalogResponse);
   rpc GetCatalog(GetCatalogRequest) returns (GetCatalogResponse);
   rpc GetAllCatalogs(google.protobuf.Empty) returns (GetAllCatalogsResponse);
+}
+
+message TaskFilter {
+  optional string name = 1;
+  optional string description = 2;
+  optional string category = 3;
+  optional TaskType task_type = 4;
+  optional string author_id = 5;
+  optional bool is_public = 6;
+}
+
+message GetAllTaskRequest {
+  ru.leti.wise.task.pagination.PaginationRequest pagination = 1;
+  TaskFilter filter = 2;
+}
+
+message GetAllTaskResponse {
+  repeated Task items = 1;
+  ru.leti.wise.task.pagination.PaginationResponse pagination = 2;
 }
 
 message CreateCatalogRequest {
@@ -62,10 +82,6 @@ message GetTaskResponse {
   Task task = 1;
 }
 
-message GetAllTaskResponse {
-  repeated Task task = 1;
-}
-
 message DeleteTaskRequest {
   string id = 1;
 }
@@ -103,18 +119,21 @@ message GetTaskSolutionResponse {
 }
 
 message GetAllTaskSolutionsRequest {
-  string task_id = 1;
-  string author_id = 2;
+  ru.leti.wise.task.pagination.PaginationRequest pagination = 1;
+  string task_id = 2;
+  string author_id = 3;
+  bool is_correct = 4;
 }
 
 message GetAllTaskSolutionsResponse {
-  repeated Solution solution = 1;
+  repeated Solution items = 1;
+  ru.leti.wise.task.pagination.PaginationResponse pagination = 2;
 }
 
-message GetUserSolutionStatisticRequest {
-  string author_id = 1;
+message TaskIds {
+  repeated string task_ids = 1;
 }
 
-message GetUserSolutionStatisticResponse {
-  repeated Solution solution = 1;
+message GetTasksByIdsResponse {
+  repeated Task tasks = 1;
 }

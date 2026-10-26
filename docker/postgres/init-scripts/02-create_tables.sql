@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS profile (
     patronymic varchar(255),
     profile_password varchar(255),
     profile_role varchar(255),
-    student_group varchar(255),
+    student_group varchar(255) default null,
+    student_course int default null,
     primary key (id)
 );
 
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS solution_graph (
 
 CREATE TABLE IF NOT EXISTS solution_implementation (
     id uuid not null,
-    code varchar(255),
+    code text,
     implementation_result jsonb,
     primary key (id)
 );
@@ -61,7 +62,7 @@ CREATE TABLE IF NOT EXISTS task (
     author_id uuid,
     id uuid not null,
     category varchar(255),
-    description varchar(255),
+    description text,
     name varchar(255),
     task_type varchar(255) check (task_type in ('IMPLEMENTATION','GRAPH')),
     primary key (id)
@@ -122,7 +123,7 @@ CREATE TABLE IF NOT EXISTS plugin (
     author_id uuid,
     bean_name varchar(255),
     category varchar(255),
-    description varchar(255),
+    description text,
     graph_type varchar(255),
     is_internal boolean,
     is_valid boolean,
