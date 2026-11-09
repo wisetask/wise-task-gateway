@@ -241,7 +241,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -498,7 +498,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "reqps",
+          "unit": "short",
           "custom": {
             "align": "auto",
             "cellOptions": {
@@ -586,7 +586,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "reqps",
+          "unit": "short",
           "custom": {
             "align": "auto",
             "cellOptions": {
@@ -674,7 +674,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -733,7 +733,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "reqps"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -779,7 +779,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "reqps"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -825,7 +825,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "reqps"
+          "unit": "s"
         },
         "overrides": []
       },
