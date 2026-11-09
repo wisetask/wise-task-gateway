@@ -12,7 +12,7 @@ services:
       - MANAGEMENT_METRICS_ENABLE_PROCESS=false
     env_file:
       - .env
-
+    restart: unless-stopped
   wise-task-plugin:
     build:
       context: ../wise-task-plugin
@@ -29,12 +29,10 @@ services:
     env_file:
       - .env
     volumes:
-      # plugin service spawns runner containers via the host docker daemon
       - /var/run/docker.sock:/var/run/docker.sock
-    # socket is root:docker 660 on the host, service runs as non-root user:
-    # add the host docker group gid so the socket is accessible
     group_add:
       - "${DOCKER_GID:?set DOCKER_GID in .env (stat -c %g /var/run/docker.sock)}"
+    restart: unless-stopped
 
   wise-task-profile:
     build:
@@ -47,6 +45,7 @@ services:
       - "127.0.0.1:${PROFILE_GRPC_PORT}:${PROFILE_GRPC_PORT}"
     env_file:
       - .env
+    restart: unless-stopped
 
   wise-task-task:
     build:
@@ -60,6 +59,7 @@ services:
       - "127.0.0.1:${TASK_GRPC_PORT}:${TASK_GRPC_PORT}"
     env_file:
       - .env
+    restart: unless-stopped
 
   wise-task-gateway:
     build:
@@ -78,6 +78,7 @@ services:
       - .env
     volumes:
       - ./src/main/resources/application.yaml:/app/config/application.yaml:ro
+    restart: unless-stopped
 
   wise-task-event:
     build:
@@ -93,6 +94,7 @@ services:
       - MANAGEMENT_METRICS_ENABLE_PROCESS=false
     env_file:
       - .env
+    restart: unless-stopped
 
   wise-task-event-db:
     image: timescale/timescaledb:2.26.0-pg16
@@ -113,7 +115,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    restart: always
+    restart: unless-stopped
 
   wise-task-db:
     image: postgres:17-alpine3.22
@@ -126,6 +128,7 @@ services:
     volumes:
       - wise-task-db:/var/lib/postgresql/data
       - ./docker/postgres/init-scripts:/docker-entrypoint-initdb.d
+    restart: unless-stopped
 
   redis:
     image: redis:8.10.1
@@ -141,6 +144,7 @@ services:
       - "127.0.0.1:${MONGO_PORT}:${MONGO_PORT}"
     volumes:
       - wise-task-mongo:/data/db
+    restart: unless-stopped
 
   tempo:
     image: grafana/tempo:3.1.1
@@ -153,6 +157,9 @@ services:
       - "127.0.0.1:3200:3200"
       - "127.0.0.1:4318:4318" # http otlp
       - "127.0.0.1:14268:14268" # Jaeger ingest
+    environment:
+      - LOG_LEVEL=warn
+    restart: unless-stopped
 
   loki:
     image: grafana/loki:3.7.9
@@ -168,6 +175,7 @@ services:
       - JAEGER_ENDPOINT=http://${TEMPO_HOST}:14268/api/traces
       - JAEGER_SAMPLER_TYPE=const
       - JAEGER_SAMPLER_PARAM=1
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:v3.13.5
@@ -184,6 +192,7 @@ services:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "127.0.0.1:9090:9090"
+    restart: unless-stopped
 
   smtp:
     image: boky/postfix:v5.1.0
@@ -216,7 +225,7 @@ services:
     container_name: grafana
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
       - GF_AUTH_DISABLE_LOGIN_FORM=true
       - GF_AUTH_BASIC_ENABLED="false"
       - GF_AUTH_DISABLE_LOGIN_FORM="true"
@@ -229,6 +238,7 @@ services:
       - prometheus
     ports:
       - "127.0.0.1:3000:3000"
+    restart: unless-stopped
 
 volumes:
   wise-task-mongo: { }
