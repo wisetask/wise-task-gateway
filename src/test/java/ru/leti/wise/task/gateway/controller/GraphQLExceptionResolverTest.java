@@ -9,12 +9,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.when;
 
-import java.nio.file.AccessDeniedException;
+import java.util.List;
 
+import org.springframework.security.access.AccessDeniedException;
 import io.grpc.Status;
 import org.springframework.graphql.execution.ErrorType;
 import graphql.GraphQLError;
+import graphql.execution.ResultPath;
+import graphql.language.SourceLocation;
 import graphql.schema.DataFetchingEnvironment;
 import io.grpc.StatusRuntimeException;
 import ru.leti.wise.task.gateway.exception.InvalidRefreshTokenException;
@@ -34,6 +38,12 @@ public class GraphQLExceptionResolverTest {
 
     @Test
     void notFoundTest(){
+        ResultPath path = ResultPath.parse("/getTask");
+        SourceLocation location = new SourceLocation(2, 5);
+
+        when(env.getExecutionStepInfo().getPath()).thenReturn(path);
+        when(env.getField().getSourceLocation()).thenReturn(location);
+
         StatusRuntimeException ex = Status.NOT_FOUND
             .withDescription("Task not found")
             .asRuntimeException();
@@ -43,6 +53,8 @@ public class GraphQLExceptionResolverTest {
         assertNotNull(result);
         assertEquals(ErrorType.NOT_FOUND, result.getErrorType());
         assertEquals("Task not found", result.getMessage());
+        assertEquals(List.of("getTask"), result.getPath());
+        assertEquals(List.of(location), result.getLocations());
     }
 
     @Test
@@ -55,7 +67,7 @@ public class GraphQLExceptionResolverTest {
 
         assertNotNull(result);
         assertEquals(ErrorType.NOT_FOUND, result.getErrorType());
-        assertEquals("NOT_FOUND", ex.getMessage());
+        assertEquals("NOT_FOUND", result.getMessage());
     }
 
     @Test

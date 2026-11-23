@@ -4,10 +4,11 @@ import graphql.GraphQLError;
 import graphql.GraphqlErrorBuilder;
 import graphql.schema.DataFetchingEnvironment;
 import io.grpc.Status;
+import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 
 import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter;
 import org.springframework.graphql.execution.ErrorType;
@@ -21,31 +22,45 @@ public class GraphQLExceptionResolver extends DataFetcherExceptionResolverAdapte
 
     @Override
     protected GraphQLError resolveToSingleError(Throwable ex, DataFetchingEnvironment env) {
-        if (ex instanceof StatusRuntimeException grpcEx){
-            String message = grpcEx.getStatus().getDescription() != null ? grpcEx.getStatus().getDescription() : grpcEx.getMessage();
-            ErrorType graphqlError = mapGrpcToGraphQL(grpcEx.getStatus().getCode());
+        Status grpcStatus = getGrpcStatus(ex);
+
+        if (grpcStatus != null){
+            String message = grpcStatus.getDescription() != null ? grpcStatus.getDescription() : ex.getMessage();
+            ErrorType graphqlError = mapGrpcToGraphQL(grpcStatus.getCode());
 
             if (graphqlError != ErrorType.INTERNAL_ERROR){
-                return buildClientWarning(graphqlError, message, grpcEx, env);
+                return buildClientWarning(graphqlError, message, env);
             }
 
-            return buildClientError(grpcEx, env, message);
+            return buildClientError(ex, env, message);
         } 
 
         if (ex instanceof InvalidRefreshTokenException || ex instanceof JwtIssuerException){
-            return buildClientWarning(ErrorType.UNAUTHORIZED, ex.getMessage(), ex, env);
+            return buildClientWarning(ErrorType.UNAUTHORIZED, ex.getMessage(), env);
         } 
 
         if (ex instanceof AccessDeniedException){
-            return buildClientWarning(ErrorType.FORBIDDEN, ex.getMessage(), ex, env);
+            return buildClientWarning(ErrorType.FORBIDDEN, ex.getMessage(), env);
         }
 
         return buildClientError(ex, env, ex.getMessage());
     }
 
-    private GraphQLError buildClientWarning(ErrorType errorType, String message, Throwable ex, DataFetchingEnvironment env){
+    private Status getGrpcStatus(Throwable ex){
+        if (ex instanceof StatusRuntimeException e){
+            return e.getStatus();
+        }
+
+        if (ex instanceof StatusException e){
+            return e.getStatus();
+        }
+
+        return null;
+    }
+
+    private GraphQLError buildClientWarning(ErrorType errorType, String message, DataFetchingEnvironment env){
         log.warn("graphql request, {} at path {}: {}",
-                errorType, env.getExecutionStepInfo().getPath(), ex.getMessage());
+                errorType, env.getExecutionStepInfo().getPath(), message);
         return GraphqlErrorBuilder.newError(env)
                     .errorType(errorType)
                     .message(message)
@@ -64,7 +79,7 @@ public class GraphQLExceptionResolver extends DataFetcherExceptionResolverAdapte
     private ErrorType mapGrpcToGraphQL(Status.Code code){
         return switch (code){
             case NOT_FOUND -> ErrorType.NOT_FOUND;
-            case INVALID_ARGUMENT -> ErrorType.BAD_REQUEST;
+            case INVALID_ARGUMENT, ALREADY_EXISTS -> ErrorType.BAD_REQUEST;
             case UNAUTHENTICATED -> ErrorType.UNAUTHORIZED;
             default -> ErrorType.INTERNAL_ERROR;
         };
