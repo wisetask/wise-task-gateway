@@ -26,15 +26,10 @@ import ru.leti.wise.task.gateway.exception.InvalidRefreshTokenException;
 
 @ExtendWith(MockitoExtension.class)
 public class GraphQLExceptionResolverTest {
-    private GraphQLExceptionResolver resolver;
+    private GraphQLExceptionResolver resolver = new GraphQLExceptionResolver();
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private DataFetchingEnvironment env;
-
-    @BeforeEach 
-    void setUp(){
-        resolver = new GraphQLExceptionResolver();
-    }
 
     @Test
     void notFoundTest(){

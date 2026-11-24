@@ -79,8 +79,9 @@ public class GraphQLExceptionResolver extends DataFetcherExceptionResolverAdapte
     private ErrorType mapGrpcToGraphQL(Status.Code code){
         return switch (code){
             case NOT_FOUND -> ErrorType.NOT_FOUND;
-            case INVALID_ARGUMENT, ALREADY_EXISTS -> ErrorType.BAD_REQUEST;
+            case INVALID_ARGUMENT, ALREADY_EXISTS, ABORTED, FAILED_PRECONDITION, OUT_OF_RANGE -> ErrorType.BAD_REQUEST;
             case UNAUTHENTICATED -> ErrorType.UNAUTHORIZED;
+            case PERMISSION_DENIED -> ErrorType.FORBIDDEN;
             default -> ErrorType.INTERNAL_ERROR;
         };
     }
